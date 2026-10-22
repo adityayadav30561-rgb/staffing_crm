@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body { @apply bg-paper font-sans text-11 text-ink antialiased; }
+  ::selection { background: #b8dcc6; }
+  :focus-visible { outline: 2px solid #1e5a4b; outline-offset: 2px; }
+}
+
+@layer components {
+  /* Type voices (Mona Sans width axis) */
+  .display { font-family: theme(fontFamily.display); font-variation-settings: 'wdth' 118; font-weight: 760; letter-spacing: -0.035em; line-height: 0.92; }
+  .heading { font-family: theme(fontFamily.display); font-variation-settings: 'wdth' 112; font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+  .title { font-family: theme(fontFamily.display); font-variation-settings: 'wdth' 106; font-weight: 650; letter-spacing: -0.015em; line-height: 1.1; }
+  .mock-display { font-family: theme(fontFamily.display); font-variation-settings: 'wdth' 112; font-weight: 700; letter-spacing: -0.03em; line-height: 0.98; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .hairline { border-color: rgb(22 24 27 / 0.08); }
+
+  .input {
+    @apply w-full rounded-md bg-surface px-10 py-[7px] text-11 text-ink placeholder:text-ink-3 ring-1 ring-ink/10 transition focus:outline-none focus:ring-2 focus:ring-forest-2 disabled:bg-paper-2 disabled:text-ink-3;
+  }
+  .label { @apply mb-4 block text-10 font-medium text-ink-2; }
+  .card { @apply rounded-lg bg-surface ring-1 ring-ink/[0.08]; }
+  .link { @apply text-forest-2 underline-offset-2 hover:underline; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

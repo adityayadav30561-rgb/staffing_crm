@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { and, desc, eq, gte, ilike, lte, or, sql, type SQL } from 'drizzle-orm';
 import {
   candidateSchema,
@@ -7,8 +8,6 @@ import {
   noteSchema,
   normalizeEmail,
   normalizePhone,
-  STAGE_LABELS,
-  STATUS_LABELS,
   type CandidateInput,
 } from '@crm/shared';
 import {
@@ -204,7 +203,7 @@ export async function candidateRoutes(app: FastifyInstance) {
       sourcedByName: row.sourcedByName,
       resumes: resumeRows.map((r) => ({ ...r.r, uploadedByName: r.uploadedByName })),
       applications: apps,
-      notes: notes.map((n) => ({ ...n.n, authorName: n.authorName })),
+      noteEntries: notes.map((n) => ({ ...n.n, authorName: n.authorName })),
       timeline,
     };
   });
@@ -256,16 +255,29 @@ export async function candidateRoutes(app: FastifyInstance) {
   app.post<{ Params: { id: string } }>('/api/candidates/:id/notes', async (req) => {
     const u = me(req);
     const id = Number(req.params.id);
-    const body = noteSchema.parse(req.body);
+    const body = noteSchema.extend({ applicationId: z.coerce.number().int().optional().nullable() }).parse(req.body);
     return app.db.transaction(async (tx) => {
       const [c] = await tx.select({ name: candidates.name }).from(candidates).where(eq(candidates.id, id));
       if (!c) throw notFound('Candidate');
-      const [row] = await tx.insert(candidateNotes).values({ candidateId: id, body: body.body, authorId: u.id }).returning();
+      let appRow: { requirementId: number } | undefined;
+      if (body.applicationId) {
+        [appRow] = await tx
+          .select({ requirementId: applications.requirementId })
+          .from(applications)
+          .where(and(eq(applications.id, body.applicationId), eq(applications.candidateId, id)));
+        if (!appRow) throw badRequest('That application belongs to another candidate');
+      }
+      const [row] = await tx
+        .insert(candidateNotes)
+        .values({ candidateId: id, applicationId: body.applicationId ?? null, body: body.body, authorId: u.id })
+        .returning();
       await logActivity(tx, {
         actorId: u.id,
         verb: 'candidate.note',
         summary: `Note on ${c.name}: ${body.body.slice(0, 120)}${body.body.length > 120 ? '…' : ''}`,
         candidateId: id,
+        requirementId: appRow?.requirementId ?? null,
+        applicationId: body.applicationId ?? null,
       });
       return { ...row, authorName: u.name };
     });
@@ -344,6 +356,3 @@ export async function saveResume(
     throw e;
   }
 }
-
-export const stageText = (stage: keyof typeof STAGE_LABELS, status: keyof typeof STATUS_LABELS) =>
-  `${STAGE_LABELS[stage]} · ${STATUS_LABELS[status]}`;

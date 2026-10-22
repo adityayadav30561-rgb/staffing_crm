@@ -2,7 +2,9 @@
   "name": "staffing-crm",
   "private": true,
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "pnpm -r --parallel --filter ./apps/* dev",
     "build": "pnpm --filter @crm/web build && pnpm --filter @crm/api build",
@@ -16,5 +18,8 @@
     "db:migrate": "pnpm --filter @crm/api db:migrate",
     "db:generate": "pnpm --filter @crm/api db:generate",
     "db:seed": "pnpm --filter @crm/api db:seed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
   }
 }
