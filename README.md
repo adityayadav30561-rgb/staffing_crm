@@ -52,15 +52,9 @@ Sign in at http://localhost:5173 as `admin@crm.local` / `ChangeMe@123` (set `SEE
 | `pnpm build`                                         | Builds the web app and bundles the API into `apps/api/dist`                        |
 | `pnpm db:generate`                                   | New migration after changing `apps/api/src/db/schema.ts`                           |
 
-## Deploying (cloud, team-only login)
+## Deploying
 
-The production build is a single Node process: `node apps/api/dist/main.js` serves the API and the built web app, and runs migrations on start. A `Dockerfile` is included (not yet built or tested in CI).
-
-1. **Database:** managed PostgreSQL 16 with point-in-time recovery (e.g. Neon, Supabase, AWS RDS). Set `DATABASE_URL`.
-2. **Files:** a private S3-compatible bucket (Cloudflare R2 or S3). Set `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`. Resumes are only reachable through 5-minute signed links issued after login.
-3. **App:** any Node host (Render, Railway, Fly.io) behind HTTPS. Set `NODE_ENV=production`, `SESSION_SECRET` (32+ random characters), `TZ=Asia/Kolkata`.
-4. **First admin:** run `node apps/api/dist/seed.js` once with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`. The admin then adds the team under Settings → Users. There is no public sign-up.
-5. **Backups:** rely on the provider's point-in-time recovery, plus a nightly `pg_dump` to the bucket.
+Free hosting (Neon + Backblaze B2/Cloudflare R2 + Render) and how to create team accounts: see [`docs/DEPLOY.md`](docs/DEPLOY.md). Project status and the next phase: [`docs/STATUS.md`](docs/STATUS.md).
 
 ## Migrating from Excel
 

@@ -103,6 +103,7 @@ function s3Storage(cfg: Config): Storage {
   const client = new S3Client({
     region: s.s3Region,
     endpoint: s.s3Endpoint,
+    forcePathStyle: s.s3ForcePathStyle,
     credentials:
       s.s3AccessKeyId && s.s3SecretAccessKey
         ? { accessKeyId: s.s3AccessKeyId, secretAccessKey: s.s3SecretAccessKey }

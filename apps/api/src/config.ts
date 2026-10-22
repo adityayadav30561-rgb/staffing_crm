@@ -14,6 +14,7 @@ export interface Config {
     s3Endpoint?: string;
     s3AccessKeyId?: string;
     s3SecretAccessKey?: string;
+    s3ForcePathStyle?: boolean;
   };
 }
 
@@ -41,6 +42,7 @@ export function loadConfig(overrides: Partial<Config> = {}): Config {
       s3Endpoint: env.S3_ENDPOINT || undefined,
       s3AccessKeyId: env.S3_ACCESS_KEY_ID,
       s3SecretAccessKey: env.S3_SECRET_ACCESS_KEY,
+      s3ForcePathStyle: env.S3_FORCE_PATH_STYLE === 'true',
     },
     ...overrides,
   };
