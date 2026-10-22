@@ -10,7 +10,8 @@
    - _Check in with …_: weekly while a selected candidate serves notice, daily in the last 3 days.
    - _Confirm joining_: on the expected joining date.
    - _Replacement guarantee ends_: a week before a placement's guarantee runs out.
-     Tick a task when it's done. Reminders close by themselves when the situation is resolved (for example, when you record the client's feedback).
+
+   Tick a task when it's done. Reminders close by themselves when the situation is resolved (for example, when you record the client's feedback).
 
 ## A requirement from start to finish
 
