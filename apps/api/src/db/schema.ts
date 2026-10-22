@@ -77,7 +77,9 @@ export const clients = pgTable('clients', {
   gstin: text('gstin'),
   notes: text('notes'),
   feeType: text('fee_type').$type<FeeType>().notNull().default('percent'),
-  feeValue: numeric('fee_value', { precision: 12, scale: 2, mode: 'number' }).notNull().default(8.33),
+  feeValue: numeric('fee_value', { precision: 12, scale: 2, mode: 'number' })
+    .notNull()
+    .default(8.33),
   replacementDays: integer('replacement_days').notNull().default(90),
   feedbackChaseDays: integer('feedback_chase_days').notNull().default(2),
   active: boolean('active').notNull().default(true),
@@ -123,7 +125,10 @@ export const requirements = pgTable(
     expMax: numeric('exp_max', { precision: 4, scale: 1, mode: 'number' }),
     budgetMin: money('budget_min'),
     budgetMax: money('budget_max'),
-    skills: text('skills').array().notNull().default(sql`'{}'::text[]`),
+    skills: text('skills')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     location: text('location'),
     workMode: text('work_mode').$type<'onsite' | 'hybrid' | 'remote'>(),
     jdText: text('jd_text'),
@@ -139,7 +144,10 @@ export const requirements = pgTable(
     ...versioned,
     ...created,
   },
-  (t) => [index('requirements_client_idx').on(t.clientId), index('requirements_status_idx').on(t.status)],
+  (t) => [
+    index('requirements_client_idx').on(t.clientId),
+    index('requirements_status_idx').on(t.status),
+  ],
 );
 
 export const requirementAssignees = pgTable(
@@ -189,7 +197,10 @@ export const candidates = pgTable(
     noticeDays: integer('notice_days'),
     location: text('location'),
     preferredLocations: text('preferred_locations'),
-    skills: text('skills').array().notNull().default(sql`'{}'::text[]`),
+    skills: text('skills')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     qualification: text('qualification'),
     source: text('source'),
     referredBy: integer('referred_by').references(() => users.id),
@@ -367,14 +378,21 @@ export const tasks = pgTable(
     /** Auto tasks are closed by the system when their condition clears. */
     autoClosed: boolean('auto_closed').notNull().default(false),
     candidateId: integer('candidate_id').references(() => candidates.id, { onDelete: 'cascade' }),
-    requirementId: integer('requirement_id').references(() => requirements.id, { onDelete: 'cascade' }),
-    applicationId: integer('application_id').references(() => applications.id, { onDelete: 'cascade' }),
+    requirementId: integer('requirement_id').references(() => requirements.id, {
+      onDelete: 'cascade',
+    }),
+    applicationId: integer('application_id').references(() => applications.id, {
+      onDelete: 'cascade',
+    }),
     interviewId: integer('interview_id').references(() => interviews.id, { onDelete: 'cascade' }),
     placementId: integer('placement_id').references(() => placements.id, { onDelete: 'cascade' }),
     createdBy: integer('created_by').references(() => users.id),
     ...created,
   },
-  (t) => [index('tasks_assignee_open_idx').on(t.assigneeId, t.doneAt), index('tasks_rule_idx').on(t.rule)],
+  (t) => [
+    index('tasks_assignee_open_idx').on(t.assigneeId, t.doneAt),
+    index('tasks_rule_idx').on(t.rule),
+  ],
 );
 
 export const notifications = pgTable(
@@ -428,7 +446,10 @@ export const auditLogs = pgTable(
     changes: jsonb('changes').$type<Record<string, [unknown, unknown]>>(),
     createdAt: ts('created_at').notNull().defaultNow(),
   },
-  (t) => [index('audit_entity_idx').on(t.entity, t.entityId), index('audit_created_idx').on(t.createdAt)],
+  (t) => [
+    index('audit_entity_idx').on(t.entity, t.entityId),
+    index('audit_created_idx').on(t.createdAt),
+  ],
 );
 
 export const lookups = pgTable(

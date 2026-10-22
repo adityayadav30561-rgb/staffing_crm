@@ -79,12 +79,21 @@ export async function applyMove(
     closedAt: closed ? new Date() : null,
   };
   if (to.stage !== before.stage) values.stageChangedAt = new Date();
-  if (CLIENT_FEEDBACK_STATUSES.includes(to.status) && !before.feedbackAt) values.feedbackAt = new Date();
+  if (CLIENT_FEEDBACK_STATUSES.includes(to.status) && !before.feedbackAt)
+    values.feedbackAt = new Date();
   if (closed) {
     values.joiningRisk = null;
     values.joiningRiskNote = null;
   }
-  const row = await updateVersioned<AppRow>(tx, applications, 'application', before.id, version, values, user.id);
+  const row = await updateVersioned<AppRow>(
+    tx,
+    applications,
+    'application',
+    before.id,
+    version,
+    values,
+    user.id,
+  );
 
   const ctx = await appContext(tx, row);
   const label = STATUS_LABELS[to.status];
@@ -93,24 +102,45 @@ export async function applyMove(
     actorId: user.id,
     verb: 'app.status',
     summary: `${ctx.candidateName}: ${label}${reasonLabel ? ` — ${reasonLabel}` : ''}${stageNote} · ${ctx.requirementTitle}`,
-    payload: { fromStage: before.stage, fromStatus: before.status, toStage: to.stage, toStatus: to.status, reason: reasonLabel },
+    payload: {
+      fromStage: before.stage,
+      fromStatus: before.status,
+      toStage: to.stage,
+      toStatus: to.status,
+      reason: reasonLabel,
+    },
     candidateId: row.candidateId,
     requirementId: row.requirementId,
     clientId: ctx.clientId,
     applicationId: row.id,
   });
   if (to.note) {
-    await tx.insert(candidateNotes).values({ candidateId: row.candidateId, applicationId: row.id, body: to.note, authorId: user.id });
+    await tx.insert(candidateNotes).values({
+      candidateId: row.candidateId,
+      applicationId: row.id,
+      body: to.note,
+      authorId: user.id,
+    });
   }
 
   const team = await requirementTeam(tx, row.requirementId);
   const link = `/requirements/${row.requirementId}?app=${row.id}`;
   if (to.status === 'selected' || to.status === 'offer_accepted') {
-    await notify(tx, team, { title: `${ctx.candidateName} — ${label}`, body: ctx.requirementTitle, link }, user.id);
+    await notify(
+      tx,
+      team,
+      { title: `${ctx.candidateName} — ${label}`, body: ctx.requirementTitle, link },
+      user.id,
+    );
   }
   if (to.status === 'joined') {
     await createPlacement(tx, user, row, offer ?? null);
-    await notify(tx, team, { title: `${ctx.candidateName} joined`, body: ctx.requirementTitle, link }, user.id);
+    await notify(
+      tx,
+      team,
+      { title: `${ctx.candidateName} joined`, body: ctx.requirementTitle, link },
+      user.id,
+    );
   }
   await syncRequirementFill(tx, user, row.requirementId, to.status === 'joined');
   return row;
@@ -135,7 +165,10 @@ export async function appContext(tx: Tx, app: AppRow) {
 
 /** Owner plus assigned recruiters of a requirement. */
 export async function requirementTeam(tx: Tx, requirementId: number): Promise<number[]> {
-  const [r] = await tx.select({ ownerId: requirements.ownerId }).from(requirements).where(eq(requirements.id, requirementId));
+  const [r] = await tx
+    .select({ ownerId: requirements.ownerId })
+    .from(requirements)
+    .where(eq(requirements.id, requirementId));
   const a = await tx
     .select({ userId: requirementAssignees.userId })
     .from(requirementAssignees)
@@ -143,15 +176,31 @@ export async function requirementTeam(tx: Tx, requirementId: number): Promise<nu
   return [r.ownerId, ...a.map((x) => x.userId)];
 }
 
-async function createPlacement(tx: Tx, user: SessionUser, app: AppRow, offer: typeof offers.$inferSelect | null) {
+async function createPlacement(
+  tx: Tx,
+  user: SessionUser,
+  app: AppRow,
+  offer: typeof offers.$inferSelect | null,
+) {
   const [c] = await tx
-    .select({ feeType: clients.feeType, feeValue: clients.feeValue, replacementDays: clients.replacementDays })
+    .select({
+      feeType: clients.feeType,
+      feeValue: clients.feeValue,
+      replacementDays: clients.replacementDays,
+    })
     .from(requirements)
     .innerJoin(clients, eq(clients.id, requirements.clientId))
     .where(eq(requirements.id, app.requirementId));
-  const joinedOn = offer?.actualDoj ?? isoDate(new Date());
+  // Marked Joined after the fact: the expected date (if already past) is the best guess.
+  const today = isoDate(new Date());
+  const joinedOn =
+    offer?.actualDoj ??
+    (offer?.expectedDoj && offer.expectedDoj <= today ? offer.expectedDoj : today);
   if (offer && !offer.actualDoj) {
-    await tx.update(offers).set({ actualDoj: joinedOn, updatedAt: new Date() }).where(eq(offers.id, offer.id));
+    await tx
+      .update(offers)
+      .set({ actualDoj: joinedOn, updatedAt: new Date() })
+      .where(eq(offers.id, offer.id));
   }
   const guaranteeUntil = isoDate(addDays(new Date(`${joinedOn}T00:00:00`), c.replacementDays));
   const [p] = await tx
@@ -172,7 +221,9 @@ async function removePlacement(tx: Tx, applicationId: number) {
   const [p] = await tx.select().from(placements).where(eq(placements.applicationId, applicationId));
   if (!p) return;
   if (p.invoiceStatus !== 'to_raise') {
-    throw badRequest('An invoice was already raised for this placement. Record the exit on the placement instead.');
+    throw badRequest(
+      'An invoice was already raised for this placement. Record the exit on the placement instead.',
+    );
   }
   await tx.delete(placements).where(eq(placements.id, p.id));
 }
@@ -181,7 +232,12 @@ async function removePlacement(tx: Tx, applicationId: number) {
  * Keeps the requirement in step with its joinings: when every opening is filled, asks the team
  * to close it; when a joining is undone on a Filled requirement, reopens it.
  */
-export async function syncRequirementFill(tx: Tx, user: SessionUser, requirementId: number, justJoined = false) {
+export async function syncRequirementFill(
+  tx: Tx,
+  user: SessionUser,
+  requirementId: number,
+  justJoined = false,
+) {
   const [r] = await tx.select().from(requirements).where(eq(requirements.id, requirementId));
   const [{ joined }] = await tx
     .select({ joined: sql<number>`count(*)::int` })
@@ -197,9 +253,17 @@ export async function syncRequirementFill(tx: Tx, user: SessionUser, requirement
   if (r.status === 'filled' && joined < r.openings) {
     await tx
       .update(requirements)
-      .set({ status: 'open', closedAt: null, version: sql`${requirements.version} + 1`, updatedAt: new Date(), updatedBy: user.id })
+      .set({
+        status: 'open',
+        closedAt: null,
+        version: sql`${requirements.version} + 1`,
+        updatedAt: new Date(),
+        updatedBy: user.id,
+      })
       .where(eq(requirements.id, requirementId));
-    await writeAudit(tx, user.id, 'requirement', requirementId, 'update', { status: ['filled', 'open'] });
+    await writeAudit(tx, user.id, 'requirement', requirementId, 'update', {
+      status: ['filled', 'open'],
+    });
     await logActivity(tx, {
       actorId: user.id,
       verb: 'requirement.reopened',
@@ -228,7 +292,9 @@ export async function cancelOpenApplications(tx: Tx, user: SessionUser, requirem
         version: sql`${applications.version} + 1`,
       })
       .where(eq(applications.id, a.id));
-    await writeAudit(tx, user.id, 'application', a.id, 'update', { status: [a.status, 'requirement_cancelled'] });
+    await writeAudit(tx, user.id, 'application', a.id, 'update', {
+      status: [a.status, 'requirement_cancelled'],
+    });
   }
   return open.length;
 }

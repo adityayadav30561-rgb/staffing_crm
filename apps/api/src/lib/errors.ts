@@ -12,7 +12,8 @@ export class HttpError extends Error {
 export const badRequest = (msg: string, code?: string, details?: unknown) =>
   new HttpError(400, msg, code, details);
 export const unauthorized = (msg = 'Please sign in') => new HttpError(401, msg, 'UNAUTHORIZED');
-export const forbidden = (msg = 'You do not have access to this') => new HttpError(403, msg, 'FORBIDDEN');
+export const forbidden = (msg = 'You do not have access to this') =>
+  new HttpError(403, msg, 'FORBIDDEN');
 export const notFound = (what = 'Record') => new HttpError(404, `${what} not found`, 'NOT_FOUND');
 export const conflict = (msg: string, code = 'CONFLICT', details?: unknown) =>
   new HttpError(409, msg, code, details);

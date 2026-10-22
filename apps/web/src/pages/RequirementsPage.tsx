@@ -3,17 +3,51 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { Briefcase, Plus } from 'lucide-react';
-import { PRIORITIES, REQUIREMENT_STATUS_LABELS, STAGE_LABELS, STAGES, splitSkills, type Priority, type RequirementStatus } from '@crm/shared';
+import {
+  PRIORITIES,
+  REQUIREMENT_STATUS_LABELS,
+  STAGE_LABELS,
+  STAGES,
+  splitSkills,
+  type Priority,
+  type RequirementStatus,
+} from '@crm/shared';
 import { api, ApiError } from '../lib/api';
 import { ago, daysSince, formatLpa, fromLakhs, toLakhs } from '../lib/format';
 import type { Client, Contact, Requirement } from '../lib/types';
-import { Avatar, Button, Checkbox, Empty, Field, Input, Loading, Modal, PageHeader, Pill, Select, Table, Tabs, Td, Textarea, Th, type Tone } from '../components/ui';
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  Empty,
+  Field,
+  Input,
+  Loading,
+  Modal,
+  PageHeader,
+  Pill,
+  Select,
+  Table,
+  Tabs,
+  Td,
+  Textarea,
+  Th,
+  type Tone,
+} from '../components/ui';
 import { useToast } from '../components/toast';
 
 export const requirementTone = (s: RequirementStatus): Tone =>
-  ({ draft: 'neutral', open: 'good', on_hold: 'warn', filled: 'dark', closed: 'neutral', cancelled: 'bad' })[s] as Tone;
+  ({
+    draft: 'neutral',
+    open: 'good',
+    on_hold: 'warn',
+    filled: 'dark',
+    closed: 'neutral',
+    cancelled: 'bad',
+  })[s] as Tone;
 
-export const priorityTone = (p: Priority): Tone => ({ low: 'neutral', normal: 'neutral', high: 'warn', urgent: 'bad' })[p] as Tone;
+export const priorityTone = (p: Priority): Tone =>
+  ({ low: 'neutral', normal: 'neutral', high: 'warn', urgent: 'bad' })[p] as Tone;
 
 const STATUS_TABS = [
   { value: 'active', label: 'Active', status: 'draft,open,on_hold' },
@@ -43,34 +77,67 @@ export function RequirementsPage() {
   const status = STATUS_TABS.find((t) => t.value === tab)!.status;
   const { data, isLoading } = useQuery({
     queryKey: ['requirements', status, mine, clientId, q],
-    queryFn: () => api.get<Requirement[]>(`/requirements?status=${status}&mine=${mine}&clientId=${clientId}&q=${encodeURIComponent(q)}`),
+    queryFn: () =>
+      api.get<Requirement[]>(
+        `/requirements?status=${status}&mine=${mine}&clientId=${clientId}&q=${encodeURIComponent(q)}`,
+      ),
   });
-  const { data: clients } = useQuery({ queryKey: ['clients', '', 'all'], queryFn: () => api.get<Client[]>('/clients?active=all') });
+  const { data: clients } = useQuery({
+    queryKey: ['clients', '', 'all'],
+    queryFn: () => api.get<Client[]>('/clients?active=all'),
+  });
 
   return (
     <>
       <PageHeader
         title="Requirements"
-        subtitle={data ? `${data.length} shown · ${data.reduce((n, r) => n + Math.max(r.openings - r.filled, 0), 0)} open positions` : undefined}
+        subtitle={
+          data
+            ? `${data.length} shown · ${data.reduce((n, r) => n + Math.max(r.openings - r.filled, 0), 0)} open positions`
+            : undefined
+        }
         actions={
-          <Button variant="primary" icon={<Plus className="size-14" strokeWidth={1.8} />} onClick={() => setNewOpen(true)}>
+          <Button
+            variant="primary"
+            icon={<Plus className="size-14" strokeWidth={1.8} />}
+            onClick={() => setNewOpen(true)}
+          >
             New requirement
           </Button>
         }
       />
       <div className="mb-12 flex flex-wrap items-center gap-8">
-        <Tabs value={tab} onChange={setTab} items={STATUS_TABS.map((t) => ({ value: t.value, label: t.label }))} />
-        <Input className="max-w-[240px]" placeholder="Search title or code" value={q} onChange={(e) => setQ(e.target.value)} />
-        <Select className="w-[200px]" value={clientId} onChange={(e) => setClientId(e.target.value)}>
+        <Tabs
+          value={tab}
+          onChange={setTab}
+          items={STATUS_TABS.map((t) => ({ value: t.value, label: t.label }))}
+        />
+        <Input
+          className="max-w-[240px]"
+          placeholder="Search title or code"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <Select
+          className="w-[200px]"
+          value={clientId}
+          onChange={(e) => setClientId(e.target.value)}
+        >
           <option value="">All clients</option>
-          {clients?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {clients?.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
         </Select>
         <Checkbox label="Only mine" checked={mine} onChange={setMine} />
       </div>
       {isLoading ? (
         <Loading />
       ) : !data?.length ? (
-        <Empty icon={<Briefcase className="size-18" />} title="No requirements here">Create a requirement when a client shares a position.</Empty>
+        <Empty icon={<Briefcase className="size-18" />} title="No requirements here">
+          Create a requirement when a client shares a position.
+        </Empty>
       ) : (
         <Table>
           <thead>
@@ -79,7 +146,11 @@ export function RequirementsPage() {
               <Th>Status</Th>
               <Th>Team</Th>
               <Th className="text-right">Filled</Th>
-              {STAGES.map((s) => <Th key={s} className="text-right">{STAGE_LABELS[s]}</Th>)}
+              {STAGES.map((s) => (
+                <Th key={s} className="text-right">
+                  {STAGE_LABELS[s]}
+                </Th>
+              ))}
               <Th>Age</Th>
               <Th>Last activity</Th>
             </tr>
@@ -88,24 +159,47 @@ export function RequirementsPage() {
             {data.map((r) => (
               <tr key={r.id} className="hover:bg-paper/60">
                 <Td>
-                  <Link to={`/requirements/${r.id}`} className="block font-medium hover:underline">{r.title}</Link>
-                  <span className="text-9 text-ink-3">{r.code} · {r.clientName}{r.budgetMax ? ` · up to ${formatLpa(r.budgetMax)}` : ''}</span>
+                  <Link to={`/requirements/${r.id}`} className="block font-medium hover:underline">
+                    {r.title}
+                  </Link>
+                  <span className="text-9 text-ink-3">
+                    {r.code} · {r.clientName}
+                    {r.budgetMax ? ` · up to ${formatLpa(r.budgetMax)}` : ''}
+                  </span>
                 </Td>
                 <Td>
                   <div className="flex flex-col items-start gap-4">
-                    <Pill tone={requirementTone(r.status)}>{REQUIREMENT_STATUS_LABELS[r.status]}</Pill>
-                    {['high', 'urgent'].includes(r.priority) && <Pill tone={priorityTone(r.priority)}>{r.priority}</Pill>}
+                    <Pill tone={requirementTone(r.status)}>
+                      {REQUIREMENT_STATUS_LABELS[r.status]}
+                    </Pill>
+                    {['high', 'urgent'].includes(r.priority) && (
+                      <Pill tone={priorityTone(r.priority)}>{r.priority}</Pill>
+                    )}
                   </div>
                 </Td>
                 <Td>
                   <div className="flex -space-x-4">
                     <Avatar name={r.ownerName} size={24} className="ring-2 ring-surface" />
-                    {r.assignees.map((a) => <Avatar key={a.id} name={a.name} size={24} className="ring-2 ring-surface" />)}
+                    {r.assignees.map((a) => (
+                      <Avatar key={a.id} name={a.name} size={24} className="ring-2 ring-surface" />
+                    ))}
                   </div>
                 </Td>
-                <Td className="tnum text-right"><span className={clsx(r.filled >= r.openings && 'font-semibold text-forest')}>{r.filled}/{r.openings}</span></Td>
+                <Td className="tnum text-right">
+                  <span className={clsx(r.filled >= r.openings && 'font-semibold text-forest')}>
+                    {r.filled}/{r.openings}
+                  </span>
+                </Td>
                 {STAGES.map((s) => (
-                  <Td key={s} className={clsx('tnum text-right', r.stageCounts[s] ? 'text-ink' : 'text-ink-3')}>{r.stageCounts[s] || '·'}</Td>
+                  <Td
+                    key={s}
+                    className={clsx(
+                      'tnum text-right',
+                      r.stageCounts[s] ? 'text-ink' : 'text-ink-3',
+                    )}
+                  >
+                    {r.stageCounts[s] || '·'}
+                  </Td>
                 ))}
                 <Td className="tnum text-ink-2">{daysSince(r.openedAt ?? r.createdAt)}d</Td>
                 <Td className="text-10 text-ink-3">{ago(r.lastActivityAt)}</Td>
@@ -114,16 +208,32 @@ export function RequirementsPage() {
           </tbody>
         </Table>
       )}
-      {newOpen && <RequirementDialog onClose={() => setNewOpen(false)} defaultClientId={params.get('clientId') ?? clientId} />}
+      {newOpen && (
+        <RequirementDialog
+          onClose={() => setNewOpen(false)}
+          defaultClientId={params.get('clientId') ?? clientId}
+        />
+      )}
     </>
   );
 }
 
-export function RequirementDialog({ requirement, onClose, defaultClientId }: { requirement?: Requirement; onClose: () => void; defaultClientId?: string }) {
+export function RequirementDialog({
+  requirement,
+  onClose,
+  defaultClientId,
+}: {
+  requirement?: Requirement;
+  onClose: () => void;
+  defaultClientId?: string;
+}) {
   const toast = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const { data: clients } = useQuery({ queryKey: ['clients', '', 'true'], queryFn: () => api.get<Client[]>('/clients?active=true') });
+  const { data: clients } = useQuery({
+    queryKey: ['clients', '', 'true'],
+    queryFn: () => api.get<Client[]>('/clients?active=true'),
+  });
   const [f, setF] = useState(() => ({
     clientId: String(requirement?.clientId ?? defaultClientId ?? ''),
     contactId: String(requirement?.contactId ?? ''),
@@ -167,19 +277,27 @@ export function RequirementDialog({ requirement, onClose, defaultClientId }: { r
         notes: f.notes,
       };
       return requirement
-        ? api.patch<Requirement>(`/requirements/${requirement.id}`, { ...body, version: requirement.version })
+        ? api.patch<Requirement>(`/requirements/${requirement.id}`, {
+            ...body,
+            version: requirement.version,
+          })
         : api.post<Requirement>('/requirements', body);
     },
     onSuccess: (r) => {
       void qc.invalidateQueries({ queryKey: ['requirements'] });
       void qc.invalidateQueries({ queryKey: ['requirement'] });
-      toast(requirement ? 'Requirement updated' : 'Requirement created as Draft — open it once confirmed with the client');
+      toast(
+        requirement
+          ? 'Requirement updated'
+          : 'Requirement created as Draft — open it once confirmed with the client',
+      );
       onClose();
       if (!requirement) navigate(`/requirements/${r.id}`);
     },
     onError: (e) => {
       toast((e as Error).message, 'error');
-      if (e instanceof ApiError && e.code === 'STALE') void qc.invalidateQueries({ queryKey: ['requirement'] });
+      if (e instanceof ApiError && e.code === 'STALE')
+        void qc.invalidateQueries({ queryKey: ['requirement'] });
     },
   });
   return (
@@ -190,8 +308,15 @@ export function RequirementDialog({ requirement, onClose, defaultClientId }: { r
       width={680}
       footer={
         <>
-          <Button variant="quiet" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" loading={save.isPending} disabled={!f.clientId || f.title.trim().length < 2} onClick={() => save.mutate()}>
+          <Button variant="quiet" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            loading={save.isPending}
+            disabled={!f.clientId || f.title.trim().length < 2}
+            onClick={() => save.mutate()}
+          >
             {requirement ? 'Save' : 'Create requirement'}
           </Button>
         </>
@@ -199,25 +324,89 @@ export function RequirementDialog({ requirement, onClose, defaultClientId }: { r
     >
       <div className="grid grid-cols-6 gap-10">
         <Field label="Client" className="col-span-3">
-          <Select value={f.clientId} onChange={(e) => { set('clientId', e.target.value); set('contactId', ''); }} disabled={!!requirement && requirement.filled > 0}>
+          <Select
+            value={f.clientId}
+            onChange={(e) => {
+              set('clientId', e.target.value);
+              set('contactId', '');
+            }}
+            disabled={!!requirement && requirement.filled > 0}
+          >
             <option value="">Pick a client…</option>
-            {clients?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {clients?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
           </Select>
         </Field>
         <Field label="Client contact" className="col-span-3">
-          <Select value={f.contactId} onChange={(e) => set('contactId', e.target.value)} disabled={!client}>
+          <Select
+            value={f.contactId}
+            onChange={(e) => set('contactId', e.target.value)}
+            disabled={!client}
+          >
             <option value="">—</option>
-            {client?.contacts?.map((c) => <option key={c.id} value={c.id}>{c.name}{c.designation ? ` (${c.designation})` : ''}</option>)}
+            {client?.contacts?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+                {c.designation ? ` (${c.designation})` : ''}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Job title" className="col-span-4"><Input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="Senior React Developer" /></Field>
-        <Field label="Positions" className="col-span-2"><Input inputMode="numeric" value={f.openings} onChange={(e) => set('openings', e.target.value)} /></Field>
-        <Field label="Experience from (yrs)" className="col-span-2"><Input inputMode="decimal" value={f.expMin} onChange={(e) => set('expMin', e.target.value)} /></Field>
-        <Field label="to (yrs)" className="col-span-1"><Input inputMode="decimal" value={f.expMax} onChange={(e) => set('expMax', e.target.value)} /></Field>
-        <Field label="Budget from (LPA)" className="col-span-2"><Input inputMode="decimal" value={f.budgetMin} onChange={(e) => set('budgetMin', e.target.value)} /></Field>
-        <Field label="to (LPA)" className="col-span-1"><Input inputMode="decimal" value={f.budgetMax} onChange={(e) => set('budgetMax', e.target.value)} /></Field>
-        <Field label="Skills" hint="Separate with commas" className="col-span-6"><Input value={f.skills} onChange={(e) => set('skills', e.target.value)} placeholder="React, TypeScript, Redux" /></Field>
-        <Field label="Location" className="col-span-2"><Input value={f.location} onChange={(e) => set('location', e.target.value)} /></Field>
+        <Field label="Job title" className="col-span-4">
+          <Input
+            value={f.title}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder="Senior React Developer"
+          />
+        </Field>
+        <Field label="Positions" className="col-span-2">
+          <Input
+            inputMode="numeric"
+            value={f.openings}
+            onChange={(e) => set('openings', e.target.value)}
+          />
+        </Field>
+        <Field label="Experience from (yrs)" className="col-span-2">
+          <Input
+            inputMode="decimal"
+            value={f.expMin}
+            onChange={(e) => set('expMin', e.target.value)}
+          />
+        </Field>
+        <Field label="to (yrs)" className="col-span-1">
+          <Input
+            inputMode="decimal"
+            value={f.expMax}
+            onChange={(e) => set('expMax', e.target.value)}
+          />
+        </Field>
+        <Field label="Budget from (LPA)" className="col-span-2">
+          <Input
+            inputMode="decimal"
+            value={f.budgetMin}
+            onChange={(e) => set('budgetMin', e.target.value)}
+          />
+        </Field>
+        <Field label="to (LPA)" className="col-span-1">
+          <Input
+            inputMode="decimal"
+            value={f.budgetMax}
+            onChange={(e) => set('budgetMax', e.target.value)}
+          />
+        </Field>
+        <Field label="Skills" hint="Separate with commas" className="col-span-6">
+          <Input
+            value={f.skills}
+            onChange={(e) => set('skills', e.target.value)}
+            placeholder="React, TypeScript, Redux"
+          />
+        </Field>
+        <Field label="Location" className="col-span-2">
+          <Input value={f.location} onChange={(e) => set('location', e.target.value)} />
+        </Field>
         <Field label="Work mode" className="col-span-2">
           <Select value={f.workMode} onChange={(e) => set('workMode', e.target.value)}>
             <option value="">—</option>
@@ -228,12 +417,31 @@ export function RequirementDialog({ requirement, onClose, defaultClientId }: { r
         </Field>
         <Field label="Priority" className="col-span-2">
           <Select value={f.priority} onChange={(e) => set('priority', e.target.value)}>
-            {PRIORITIES.map((p) => <option key={p} value={p}>{p[0].toUpperCase() + p.slice(1)}</option>)}
+            {PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {p[0].toUpperCase() + p.slice(1)}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Hiring timeline (target date)" className="col-span-3"><Input type="date" value={f.targetDate} onChange={(e) => set('targetDate', e.target.value)} /></Field>
-        <Field label="Job description" className="col-span-6"><Textarea className="min-h-[140px]" value={f.jdText} onChange={(e) => set('jdText', e.target.value)} placeholder="Paste the JD from the client's email or WhatsApp" /></Field>
-        <Field label="Internal notes" className="col-span-6"><Textarea value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
+        <Field label="Hiring timeline (target date)" className="col-span-3">
+          <Input
+            type="date"
+            value={f.targetDate}
+            onChange={(e) => set('targetDate', e.target.value)}
+          />
+        </Field>
+        <Field label="Job description" className="col-span-6">
+          <Textarea
+            className="min-h-[140px]"
+            value={f.jdText}
+            onChange={(e) => set('jdText', e.target.value)}
+            placeholder="Paste the JD from the client's email or WhatsApp"
+          />
+        </Field>
+        <Field label="Internal notes" className="col-span-6">
+          <Textarea value={f.notes} onChange={(e) => set('notes', e.target.value)} />
+        </Field>
       </div>
     </Modal>
   );

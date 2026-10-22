@@ -25,7 +25,10 @@ export async function updateVersioned<T extends Record<string, unknown>>(
   values: Record<string, unknown>,
   actorId: number,
 ): Promise<T> {
-  const [before] = (await tx.select().from(table as any).where(eq(table.id, id))) as T[];
+  const [before] = (await tx
+    .select()
+    .from(table as any)
+    .where(eq(table.id, id))) as T[];
   if (!before) throw notFound(entity);
   if (before.version !== version) throw await staleError(tx, entity, before);
   const hasUpdatedBy = 'updatedBy' in (table as any);
@@ -40,7 +43,10 @@ export async function updateVersioned<T extends Record<string, unknown>>(
     .where(and(eq(table.id, id), eq(table.version, version)))
     .returning()) as T[];
   if (!row) {
-    const [current] = (await tx.select().from(table as any).where(eq(table.id, id))) as T[];
+    const [current] = (await tx
+      .select()
+      .from(table as any)
+      .where(eq(table.id, id))) as T[];
     throw await staleError(tx, entity, current ?? before);
   }
   await writeAudit(tx, actorId, entity, id, 'update', diff(before, values));
@@ -50,7 +56,10 @@ export async function updateVersioned<T extends Record<string, unknown>>(
 async function staleError(tx: Tx, entity: string, current: Record<string, unknown>) {
   let by: string | null = null;
   if (typeof current.updatedBy === 'number') {
-    const [u] = await tx.select({ name: users.name }).from(users).where(eq(users.id, current.updatedBy));
+    const [u] = await tx
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, current.updatedBy));
     by = u?.name ?? null;
   }
   return conflict(

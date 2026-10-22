@@ -9,5 +9,9 @@ export async function notify(
 ) {
   const ids = [...new Set(userIds)].filter((id) => id !== exceptUserId);
   if (!ids.length) return;
-  await tx.insert(notifications).values(ids.map((userId) => ({ userId, title: n.title, body: n.body ?? null, link: n.link ?? null })));
+  await tx
+    .insert(notifications)
+    .values(
+      ids.map((userId) => ({ userId, title: n.title, body: n.body ?? null, link: n.link ?? null })),
+    );
 }

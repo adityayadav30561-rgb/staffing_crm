@@ -1,11 +1,11 @@
 node_modules
 dist
+coverage
+uploads/
+test-results
+playwright-report
+*.log
+.DS_Store
 .env
 .env.*
 !.env.example
-uploads/
-coverage
-playwright-report
-test-results
-*.log
-.DS_Store

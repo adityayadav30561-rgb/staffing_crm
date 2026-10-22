@@ -63,7 +63,11 @@ export async function importRoutes(app: FastifyInstance) {
       rowCount: rows.length,
       sample: rows.slice(0, 5),
       suggestedMapping: suggestMapping(headers),
-      fields: CANDIDATE_IMPORT_FIELDS.map(({ key, label, required }) => ({ key, label, required: !!required })),
+      fields: CANDIDATE_IMPORT_FIELDS.map(({ key, label, required }) => ({
+        key,
+        label,
+        required: !!required,
+      })),
     };
   });
 
@@ -106,7 +110,8 @@ export async function importRoutes(app: FastifyInstance) {
           { ...input, importJobId: job.id },
           `Imported ${input.name} from ${job.fileName}`,
         );
-        if (createdAt) await tx.update(candidates).set({ createdAt }).where(eq(candidates.id, row.id));
+        if (createdAt)
+          await tx.update(candidates).set({ createdAt }).where(eq(candidates.id, row.id));
         created++;
       }
       await logActivity(tx, {
@@ -116,7 +121,10 @@ export async function importRoutes(app: FastifyInstance) {
         payload: { jobId: job.id },
       });
       const res = { created, skipped };
-      await tx.update(importJobs).set({ status: 'committed', result: res }).where(eq(importJobs.id, job.id));
+      await tx
+        .update(importJobs)
+        .set({ status: 'committed', result: res })
+        .where(eq(importJobs.id, job.id));
       return res;
     });
     return { ...result, skippedCount: result.skipped.length };
@@ -135,7 +143,10 @@ export async function importRoutes(app: FastifyInstance) {
       [
         { header: 'Row', value: (r) => r.row + 1 },
         { header: 'Reason', value: (r) => r.reason, width: 40 },
-        ...job.headers.map((h) => ({ header: h, value: (r: (typeof skipped)[number]) => toCell(r.data[h]) })),
+        ...job.headers.map((h) => ({
+          header: h,
+          value: (r: (typeof skipped)[number]) => toCell(r.data[h]),
+        })),
       ],
       skipped,
     );
@@ -144,7 +155,10 @@ export async function importRoutes(app: FastifyInstance) {
 }
 
 async function loadJob(db: DB, id: number, userId: number) {
-  const [job] = await db.select().from(importJobs).where(and(eq(importJobs.id, id), eq(importJobs.createdBy, userId)));
+  const [job] = await db
+    .select()
+    .from(importJobs)
+    .where(and(eq(importJobs.id, id), eq(importJobs.createdBy, userId)));
   if (!job) throw notFound('Import');
   return job;
 }
@@ -159,7 +173,7 @@ function toCell(v: unknown): Cell {
 export async function parseSheet(buf: Buffer, fileName: string) {
   const wb = new ExcelJS.Workbook();
   if (/\.csv$/i.test(fileName)) {
-    await wb.csv.read(Readable.from(buf.toString('utf8').replace(/^﻿/, '')));
+    await wb.csv.read(Readable.from(buf.toString('utf8').replace(/^\uFEFF/, '')));
   } else if (/\.xlsx$/i.test(fileName)) {
     await wb.xlsx.load(buf as unknown as ArrayBuffer);
   } else {
@@ -169,7 +183,11 @@ export async function parseSheet(buf: Buffer, fileName: string) {
   if (!ws) return { headers: [], rows: [] };
   let headerRow = 0;
   ws.eachRow((row, n) => {
-    if (!headerRow && (row.values as unknown[]).filter((v) => v != null && String(v).trim()).length >= 2) headerRow = n;
+    if (
+      !headerRow &&
+      (row.values as unknown[]).filter((v) => v != null && String(v).trim()).length >= 2
+    )
+      headerRow = n;
   });
   if (!headerRow) return { headers: [], rows: [] };
   const headerCells = ws.getRow(headerRow);
@@ -203,7 +221,11 @@ function cellText(v: ExcelJS.CellValue): Cell {
   if (typeof v === 'string') return v.trim();
   if (typeof v === 'boolean') return String(v);
   if (typeof v === 'object') {
-    if ('richText' in v) return v.richText.map((t) => t.text).join('').trim();
+    if ('richText' in v)
+      return v.richText
+        .map((t) => t.text)
+        .join('')
+        .trim();
     if ('text' in v) return cellText(v.text as ExcelJS.CellValue);
     if ('result' in v) return cellText(v.result as ExcelJS.CellValue);
     if ('error' in v) return null;
@@ -218,8 +240,14 @@ async function validate(
   defaultSource: string | null,
 ): Promise<RowCheck[]> {
   if (!mapping.name) throw badRequest('Map the Name column');
-  const get = (row: Record<string, unknown>, key: string) => (mapping[key] ? row[mapping[key]] : null);
-  const str = (v: unknown) => (v == null || v === '' ? null : v instanceof Date ? v.toISOString().slice(0, 10) : String(v).trim() || null);
+  const get = (row: Record<string, unknown>, key: string) =>
+    mapping[key] ? row[mapping[key]] : null;
+  const str = (v: unknown) =>
+    v == null || v === ''
+      ? null
+      : v instanceof Date
+        ? v.toISOString().slice(0, 10)
+        : String(v).trim() || null;
   const team = await db.select({ id: users.id, name: users.name }).from(users);
   const userByName = new Map(team.map((t) => [normalizeText(t.name), t.id]));
 
@@ -254,7 +282,8 @@ async function validate(
       notes: str(get(row, 'notes')),
     };
     const parsed = candidateSchema.safeParse(raw);
-    if (!parsed.success) errors.push(...parsed.error.issues.map((x) => `${x.path.join('.') || 'row'}: ${x.message}`));
+    if (!parsed.success)
+      errors.push(...parsed.error.issues.map((x) => `${x.path.join('.') || 'row'}: ${x.message}`));
     let sourcedBy: number | null = null;
     const recruiter = str(get(row, 'sourcedBy'));
     if (recruiter) {
@@ -284,7 +313,9 @@ async function validate(
   // Duplicates inside the file
   const seen = new Map<string, number>();
   for (const c of checks) {
-    for (const k of [c.phone && `p:${c.phone}`, c.email && `e:${c.email}`].filter(Boolean) as string[]) {
+    for (const k of [c.phone && `p:${c.phone}`, c.email && `e:${c.email}`].filter(
+      Boolean,
+    ) as string[]) {
       const first = seen.get(k);
       if (first && !c.inFileDuplicateOf) c.inFileDuplicateOf = first;
       else if (!first) seen.set(k, c.row);
@@ -295,7 +326,12 @@ async function validate(
   const emails = [...new Set(checks.map((c) => c.email).filter(Boolean))] as string[];
   if (phones.length || emails.length) {
     const existing = await db
-      .select({ id: candidates.id, name: candidates.name, phoneE164: candidates.phoneE164, emailNorm: candidates.emailNorm })
+      .select({
+        id: candidates.id,
+        name: candidates.name,
+        phoneE164: candidates.phoneE164,
+        emailNorm: candidates.emailNorm,
+      })
       .from(candidates)
       .where(
         or(
@@ -317,7 +353,9 @@ async function validate(
 
 function summarize(checks: RowCheck[]) {
   const errors = checks.filter((c) => c.errors.length).length;
-  const duplicates = checks.filter((c) => !c.errors.length && (c.duplicates.length || c.inFileDuplicateOf)).length;
+  const duplicates = checks.filter(
+    (c) => !c.errors.length && (c.duplicates.length || c.inFileDuplicateOf),
+  ).length;
   return {
     total: checks.length,
     ready: checks.length - errors - duplicates,

@@ -3,7 +3,17 @@ import { useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { AlertTriangle, ArrowLeft, ArrowRight, CalendarPlus, Check, FileText, Send, Undo2, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  CalendarPlus,
+  Check,
+  FileText,
+  Send,
+  Undo2,
+  X,
+} from 'lucide-react';
 import {
   INTERVIEW_AWAITING_OUTCOME,
   INTERVIEW_MODE_LABELS,
@@ -36,9 +46,33 @@ import {
 import { api, ApiError } from '../lib/api';
 import { useMe } from '../lib/auth';
 import { useLookup, useSettings, useUsers } from '../lib/queries';
-import { dateTimeInput, fmtDate, fmtDateTime, formatInr, formatLpa, fromLakhs, toLakhs } from '../lib/format';
+import {
+  dateTimeInput,
+  fmtDate,
+  fmtDateTime,
+  formatInr,
+  formatLpa,
+  fromLakhs,
+  toLakhs,
+} from '../lib/format';
 import type { ApplicationDetail, Interview } from '../lib/types';
-import { Avatar, Button, Checkbox, Drawer, ErrorNote, Field, Input, KeyValue, Loading, Modal, Pill, Select, StatusPill, Textarea, Timeline } from '../components/ui';
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  Drawer,
+  ErrorNote,
+  Field,
+  Input,
+  KeyValue,
+  Loading,
+  Modal,
+  Pill,
+  Select,
+  StatusPill,
+  Textarea,
+  Timeline,
+} from '../components/ui';
 import { useToast } from '../components/toast';
 import { ResumeLink } from './ResumeLink';
 
@@ -63,7 +97,19 @@ export function useAppDrawer() {
 export function useInvalidatePipeline() {
   const qc = useQueryClient();
   return () => {
-    for (const key of ['application', 'applications', 'requirement', 'requirements', 'candidate', 'candidates', 'dashboard', 'counts', 'tasks', 'calendar', 'placements']) {
+    for (const key of [
+      'application',
+      'applications',
+      'requirement',
+      'requirements',
+      'candidate',
+      'candidates',
+      'dashboard',
+      'counts',
+      'tasks',
+      'calendar',
+      'placements',
+    ]) {
       void qc.invalidateQueries({ queryKey: [key] });
     }
   };
@@ -79,12 +125,21 @@ export function ApplicationDrawer() {
 }
 
 function DrawerBody({ id, onClose }: { id: number; onClose: () => void }) {
-  const { data: a, isLoading, error } = useQuery({
+  const {
+    data: a,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['application', id],
     queryFn: () => api.get<ApplicationDetail>(`/applications/${id}`),
   });
   if (isLoading) return <Loading />;
-  if (error || !a) return <div className="p-18"><ErrorNote error={error ?? new Error('Not found')} /></div>;
+  if (error || !a)
+    return (
+      <div className="p-18">
+        <ErrorNote error={error ?? new Error('Not found')} />
+      </div>
+    );
   const closed = isClosed(a.status);
   return (
     <>
@@ -92,17 +147,29 @@ function DrawerBody({ id, onClose }: { id: number; onClose: () => void }) {
         <div className="flex items-start gap-10">
           <Avatar name={a.candidate.name} size={36} />
           <div className="min-w-0 flex-1">
-            <Link to={`/candidates/${a.candidateId}`} onClick={onClose} className="title block truncate text-14 hover:underline">
+            <Link
+              to={`/candidates/${a.candidateId}`}
+              onClick={onClose}
+              className="title block truncate text-14 hover:underline"
+            >
               {a.candidate.name}
             </Link>
             <p className="truncate text-10 text-ink-2">
-              <Link to={`/requirements/${a.requirementId}`} onClick={onClose} className="hover:underline">
+              <Link
+                to={`/requirements/${a.requirementId}`}
+                onClick={onClose}
+                className="hover:underline"
+              >
                 {a.requirement.code} · {a.requirement.title}
               </Link>{' '}
               · {a.requirement.clientName}
             </p>
           </div>
-          <button onClick={onClose} className="rounded-full p-4 text-ink-3 hover:bg-paper-2" aria-label="Close">
+          <button
+            onClick={onClose}
+            className="rounded-full p-4 text-ink-3 hover:bg-paper-2"
+            aria-label="Close"
+          >
             <X className="size-16" strokeWidth={1.8} />
           </button>
         </div>
@@ -112,7 +179,8 @@ function DrawerBody({ id, onClose }: { id: number; onClose: () => void }) {
           {a.reasonLabel && <span className="text-10 text-ink-2">— {a.reasonLabel}</span>}
           {a.joiningRisk && (
             <Pill tone="bad">
-              <AlertTriangle className="size-12" strokeWidth={1.8} /> {JOINING_RISK_LABELS[a.joiningRisk]}
+              <AlertTriangle className="size-12" strokeWidth={1.8} />{' '}
+              {JOINING_RISK_LABELS[a.joiningRisk]}
             </Pill>
           )}
           <span className="ml-auto text-9 text-ink-3">Added by {a.addedByName ?? '—'}</span>
@@ -121,7 +189,8 @@ function DrawerBody({ id, onClose }: { id: number; onClose: () => void }) {
       <div className="min-h-0 flex-1 space-y-14 overflow-y-auto px-18 py-16">
         {!a.canWork && (
           <p className="rounded-md bg-paper-2 px-12 py-8 text-10 text-ink-2">
-            You can view this, but only the requirement's owner, its assigned recruiters or a manager can change it.
+            You can view this, but only the requirement's owner, its assigned recruiters or a
+            manager can change it.
           </p>
         )}
         <StatusControl a={a} />
@@ -147,15 +216,35 @@ function StageTrack({ stage, closed }: { stage: Stage; closed: boolean }) {
     <ol className="mt-14 grid grid-cols-6 gap-4">
       {STAGES.map((s, i) => (
         <li key={s} className="min-w-0">
-          <div className={clsx('h-[4px] rounded-full', i < cur ? 'bg-moss' : i === cur ? (closed ? 'bg-ink-3' : 'bg-forest') : 'bg-paper-3')} />
-          <p className={clsx('mt-4 truncate text-9', i === cur ? 'font-medium text-ink' : 'text-ink-3')}>{STAGE_LABELS[s]}</p>
+          <div
+            className={clsx(
+              'h-[4px] rounded-full',
+              i < cur ? 'bg-moss' : i === cur ? (closed ? 'bg-ink-3' : 'bg-forest') : 'bg-paper-3',
+            )}
+          />
+          <p
+            className={clsx(
+              'mt-4 truncate text-9',
+              i === cur ? 'font-medium text-ink' : 'text-ink-3',
+            )}
+          >
+            {STAGE_LABELS[s]}
+          </p>
         </li>
       ))}
     </ol>
   );
 }
 
-function Section({ title, action, children }: { title: ReactNode; action?: ReactNode; children: ReactNode }) {
+function Section({
+  title,
+  action,
+  children,
+}: {
+  title: ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-lg bg-surface p-14 ring-1 ring-ink/[0.08]">
       <div className="mb-10 flex items-center justify-between gap-8">
@@ -168,7 +257,11 @@ function Section({ title, action, children }: { title: ReactNode; action?: React
 }
 
 /** Wraps a mutation with toast + stale-record handling. */
-function useAppMutation<T>(a: ApplicationDetail, fn: (v: T) => Promise<unknown>, okMessage?: string) {
+function useAppMutation<T>(
+  a: ApplicationDetail,
+  fn: (v: T) => Promise<unknown>,
+  okMessage?: string,
+) {
   const invalidate = useInvalidatePipeline();
   const toast = useToast();
   return useMutation({
@@ -193,8 +286,10 @@ function StatusControl({ a }: { a: ApplicationDetail }) {
   const [reasonFor, setReasonFor] = useState<{ stage: Stage; status: AppStatus } | null>(null);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
-  const move = useAppMutation(a, (v: { stage: Stage; status: AppStatus; reasonId?: number | null; note?: string | null }) =>
-    api.post(`/applications/${a.id}/move`, { version: a.version, ...v }),
+  const move = useAppMutation(
+    a,
+    (v: { stage: Stage; status: AppStatus; reasonId?: number | null; note?: string | null }) =>
+      api.post(`/applications/${a.id}/move`, { version: a.version, ...v }),
   );
   const pick = (stage: Stage, status: AppStatus) => {
     if (REASON_KIND_FOR_STATUS[status]) setReasonFor({ stage, status });
@@ -216,7 +311,9 @@ function StatusControl({ a }: { a: ApplicationDetail }) {
             onClick={() => pick(a.stage, s)}
             className={clsx(
               'rounded-full px-10 py-5 text-10 transition disabled:cursor-default',
-              s === a.status ? 'bg-forest font-medium text-mint' : 'text-ink-2 ring-1 ring-ink/10 hover:bg-paper disabled:opacity-60',
+              s === a.status
+                ? 'bg-forest font-medium text-mint'
+                : 'text-ink-2 ring-1 ring-ink/10 hover:bg-paper disabled:opacity-60',
             )}
           >
             {STATUS_LABELS[s]}
@@ -226,7 +323,12 @@ function StatusControl({ a }: { a: ApplicationDetail }) {
       {a.canWork && (
         <div className="mt-12 flex flex-wrap items-center gap-8">
           {a.stage === 'screening' && !isClosed(a.status) && (
-            <Button variant="primary" icon={<Send className="size-14" strokeWidth={1.8} />} onClick={() => setSubmitOpen(true)} disabled={a.missingScreening.length > 0}>
+            <Button
+              variant="primary"
+              icon={<Send className="size-14" strokeWidth={1.8} />}
+              onClick={() => setSubmitOpen(true)}
+              disabled={a.missingScreening.length > 0}
+            >
               Mark submitted to client
             </Button>
           )}
@@ -237,30 +339,47 @@ function StatusControl({ a }: { a: ApplicationDetail }) {
               loading={move.isPending}
               onClick={() => move.mutate({ stage: next, status: STAGE_ENTRY_STATUS[next] })}
               disabled={next === 'joining' && !a.offer?.expectedDoj}
-              title={next === 'joining' && !a.offer?.expectedDoj ? 'Record the offer with an expected joining date first' : undefined}
+              title={
+                next === 'joining' && !a.offer?.expectedDoj
+                  ? 'Record the offer with an expected joining date first'
+                  : undefined
+              }
             >
               Move to {STAGE_LABELS[next]}
             </Button>
           )}
           {a.stage === 'interview' && !isClosed(a.status) && a.status !== 'selected' && (
-            <Button icon={<CalendarPlus className="size-14" strokeWidth={1.8} />} onClick={() => setInterviewOpen(true)}>
+            <Button
+              icon={<CalendarPlus className="size-14" strokeWidth={1.8} />}
+              onClick={() => setInterviewOpen(true)}
+            >
               {a.interviews.length ? 'Next round' : 'Log interview'}
             </Button>
           )}
-          <MoreMenu a={a} onWithdraw={() => setReasonFor({ stage: a.stage, status: 'withdrawn' })} onBack={(s) => move.mutate({ stage: s, status: STAGE_ENTRY_STATUS[s] })} />
+          <MoreMenu
+            a={a}
+            onWithdraw={() => setReasonFor({ stage: a.stage, status: 'withdrawn' })}
+            onBack={(s) => move.mutate({ stage: s, status: STAGE_ENTRY_STATUS[s] })}
+          />
         </div>
       )}
       {a.stage === 'screening' && a.missingScreening.length > 0 && !isClosed(a.status) && (
-        <p className="mt-8 text-9 text-ink-3">Fill the screening card below before marking the profile as submitted.</p>
+        <p className="mt-8 text-9 text-ink-3">
+          Fill the screening card below before marking the profile as submitted.
+        </p>
       )}
       {next === 'joining' && a.status === 'offer_accepted' && !a.offer?.expectedDoj && (
-        <p className="mt-8 text-9 text-ink-3">Record the offer with an expected joining date to move to Joining.</p>
+        <p className="mt-8 text-9 text-ink-3">
+          Record the offer with an expected joining date to move to Joining.
+        </p>
       )}
       <ReasonDialog
         target={reasonFor}
         onClose={() => setReasonFor(null)}
         loading={move.isPending}
-        onConfirm={(reasonId, note) => move.mutate({ ...reasonFor!, reasonId, note }, { onSuccess: () => setReasonFor(null) })}
+        onConfirm={(reasonId, note) =>
+          move.mutate({ ...reasonFor!, reasonId, note }, { onSuccess: () => setReasonFor(null) })
+        }
       />
       {submitOpen && <SubmitDialog a={a} onClose={() => setSubmitOpen(false)} />}
       {interviewOpen && <InterviewDialog a={a} onClose={() => setInterviewOpen(false)} />}
@@ -268,17 +387,36 @@ function StatusControl({ a }: { a: ApplicationDetail }) {
   );
 }
 
-function MoreMenu({ a, onWithdraw, onBack }: { a: ApplicationDetail; onWithdraw: () => void; onBack: (s: Stage) => void }) {
+function MoreMenu({
+  a,
+  onWithdraw,
+  onBack,
+}: {
+  a: ApplicationDetail;
+  onWithdraw: () => void;
+  onBack: (s: Stage) => void;
+}) {
   const [open, setOpen] = useState(false);
   const earlier = STAGES.slice(0, stageIndex(a.stage));
   if (isClosed(a.status) && !earlier.length) return null;
   return (
     <div className="relative ml-auto">
-      <Button variant="quiet" size="sm" onClick={() => setOpen((o) => !o)}>More…</Button>
+      <Button variant="quiet" size="sm" onClick={() => setOpen((o) => !o)}>
+        More…
+      </Button>
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-4 w-[220px] rounded-lg bg-surface p-4 shadow-pop" onMouseLeave={() => setOpen(false)}>
+        <div
+          className="absolute right-0 top-full z-10 mt-4 w-[220px] rounded-lg bg-surface p-4 shadow-pop"
+          onMouseLeave={() => setOpen(false)}
+        >
           {!isClosed(a.status) && (
-            <button className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-left text-10 hover:bg-paper" onClick={() => { setOpen(false); onWithdraw(); }}>
+            <button
+              className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-left text-10 hover:bg-paper"
+              onClick={() => {
+                setOpen(false);
+                onWithdraw();
+              }}
+            >
               <Undo2 className="size-14" strokeWidth={1.8} /> Withdraw candidate…
             </button>
           )}
@@ -288,7 +426,8 @@ function MoreMenu({ a, onWithdraw, onBack }: { a: ApplicationDetail; onWithdraw:
               className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-left text-10 hover:bg-paper"
               onClick={() => {
                 setOpen(false);
-                if (confirm(`Move back to ${STAGE_LABELS[s]}? Use this to correct a mistake.`)) onBack(s);
+                if (confirm(`Move back to ${STAGE_LABELS[s]}? Use this to correct a mistake.`))
+                  onBack(s);
               }}
             >
               <ArrowLeft className="size-14" strokeWidth={1.8} /> Move back to {STAGE_LABELS[s]}
@@ -324,8 +463,15 @@ function ReasonDialog({
       width={460}
       footer={
         <>
-          <Button variant="quiet" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" loading={loading} disabled={!reasonId} onClick={() => onConfirm(Number(reasonId), note.trim() || null)}>
+          <Button variant="quiet" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            loading={loading}
+            disabled={!reasonId}
+            onClick={() => onConfirm(Number(reasonId), note.trim() || null)}
+          >
             Save
           </Button>
         </>
@@ -336,12 +482,18 @@ function ReasonDialog({
           <Select value={reasonId} onChange={(e) => setReasonId(e.target.value)}>
             <option value="">Pick a reason…</option>
             {reasons.map((r) => (
-              <option key={r.id} value={r.id}>{r.label}</option>
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
             ))}
           </Select>
         </Field>
         <Field label="Note (optional)">
-          <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything the team should know" />
+          <Textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Anything the team should know"
+          />
         </Field>
       </div>
     </Modal>
@@ -361,14 +513,44 @@ function CandidateFacts({ a }: { a: ApplicationDetail }) {
     >
       <KeyValue
         items={[
-          ['Phone', c.phone ? <a className="link" href={`tel:${c.phone}`}>{c.phone}</a> : '—'],
-          ['Email', c.email ? <a className="link" href={`mailto:${c.email}`}>{c.email}</a> : '—'],
+          [
+            'Phone',
+            c.phone ? (
+              <a className="link" href={`tel:${c.phone}`}>
+                {c.phone}
+              </a>
+            ) : (
+              '—'
+            ),
+          ],
+          [
+            'Email',
+            c.email ? (
+              <a className="link" href={`mailto:${c.email}`}>
+                {c.email}
+              </a>
+            ) : (
+              '—'
+            ),
+          ],
           ['Current', [c.currentTitle, c.currentCompany].filter(Boolean).join(' at ') || '—'],
           ['Experience', c.totalExp != null ? `${c.totalExp} yrs` : '—'],
           ['CTC', `${formatLpa(c.currentCtc)} → ${formatLpa(c.expectedCtc)}`],
-          ['Budget', a.requirement.budgetMax ? `${formatLpa(a.requirement.budgetMin)} – ${formatLpa(a.requirement.budgetMax)}` : '—'],
+          [
+            'Budget',
+            a.requirement.budgetMax
+              ? `${formatLpa(a.requirement.budgetMin)} – ${formatLpa(a.requirement.budgetMax)}`
+              : '—',
+          ],
           ['Notice', c.noticeDays != null ? `${c.noticeDays} days` : '—'],
-          ['Resume', a.resumes[0] ? <ResumeLink resume={a.resumes[0]} /> : <span className="text-ink-3">None uploaded</span>],
+          [
+            'Resume',
+            a.resumes[0] ? (
+              <ResumeLink resume={a.resumes[0]} />
+            ) : (
+              <span className="text-ink-3">None uploaded</span>
+            ),
+          ],
         ]}
       />
     </Section>
@@ -409,13 +591,30 @@ function ScreeningSection({ a }: { a: ApplicationDetail }) {
   );
   if (!editing && s) {
     return (
-      <Section title="Screening card" action={a.canWork && <Button size="sm" variant="quiet" onClick={() => setEditing(true)}>Edit</Button>}>
+      <Section
+        title="Screening card"
+        action={
+          a.canWork && (
+            <Button size="sm" variant="quiet" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          )
+        }
+      >
         <KeyValue
           items={[
             ['Interested', s.interested ? 'Yes' : 'No'],
             ['Current → expected', `${formatLpa(s.currentCtc)} → ${formatLpa(s.expectedCtc)}`],
-            ['Notice period', s.noticeDays != null ? `${s.noticeDays} days${s.noticeNegotiable ? ' (negotiable)' : ''}` : '—'],
-            ['Location', `${s.currentLocation || '—'}${s.willingToRelocate ? ' · willing to relocate' : ''}`],
+            [
+              'Notice period',
+              s.noticeDays != null
+                ? `${s.noticeDays} days${s.noticeNegotiable ? ' (negotiable)' : ''}`
+                : '—',
+            ],
+            [
+              'Location',
+              `${s.currentLocation || '—'}${s.willingToRelocate ? ' · willing to relocate' : ''}`,
+            ],
             ['Skill rating', s.skillRating ? `${s.skillRating} / 5` : '—'],
             ['Remarks', s.remarks || '—'],
             ['Screened by', `${a.screenedByName ?? '—'} · ${fmtDate(a.screenedAt)}`],
@@ -429,27 +628,82 @@ function ScreeningSection({ a }: { a: ApplicationDetail }) {
     <Section title="Screening card" action={<Pill tone="warn">Required before submission</Pill>}>
       <div className="grid grid-cols-2 gap-10">
         <div className="col-span-2 flex flex-wrap gap-16">
-          <Checkbox label="Interested in this role" checked={form.interested} onChange={(v) => set('interested', v)} />
+          <Checkbox
+            label="Interested in this role"
+            checked={form.interested}
+            onChange={(v) => set('interested', v)}
+          />
         </div>
-        <Field label="Current CTC (lakhs p.a.)"><Input inputMode="decimal" value={form.currentCtc} onChange={(e) => set('currentCtc', e.target.value)} /></Field>
-        <Field label="Expected CTC (lakhs p.a.)"><Input inputMode="decimal" value={form.expectedCtc} onChange={(e) => set('expectedCtc', e.target.value)} /></Field>
-        <Field label="Notice period (days)"><Input inputMode="numeric" value={form.noticeDays} onChange={(e) => set('noticeDays', e.target.value)} /></Field>
-        <div className="flex items-end pb-6"><Checkbox label="Notice negotiable" checked={form.noticeNegotiable} onChange={(v) => set('noticeNegotiable', v)} /></div>
-        <Field label="Current location"><Input value={form.currentLocation} onChange={(e) => set('currentLocation', e.target.value)} /></Field>
-        <div className="flex items-end pb-6"><Checkbox label="Willing to relocate" checked={form.willingToRelocate} onChange={(v) => set('willingToRelocate', v)} /></div>
+        <Field label="Current CTC (lakhs p.a.)">
+          <Input
+            inputMode="decimal"
+            value={form.currentCtc}
+            onChange={(e) => set('currentCtc', e.target.value)}
+          />
+        </Field>
+        <Field label="Expected CTC (lakhs p.a.)">
+          <Input
+            inputMode="decimal"
+            value={form.expectedCtc}
+            onChange={(e) => set('expectedCtc', e.target.value)}
+          />
+        </Field>
+        <Field label="Notice period (days)">
+          <Input
+            inputMode="numeric"
+            value={form.noticeDays}
+            onChange={(e) => set('noticeDays', e.target.value)}
+          />
+        </Field>
+        <div className="flex items-end pb-6">
+          <Checkbox
+            label="Notice negotiable"
+            checked={form.noticeNegotiable}
+            onChange={(v) => set('noticeNegotiable', v)}
+          />
+        </div>
+        <Field label="Current location">
+          <Input
+            value={form.currentLocation}
+            onChange={(e) => set('currentLocation', e.target.value)}
+          />
+        </Field>
+        <div className="flex items-end pb-6">
+          <Checkbox
+            label="Willing to relocate"
+            checked={form.willingToRelocate}
+            onChange={(v) => set('willingToRelocate', v)}
+          />
+        </div>
         <Field label="Skill rating (1–5)">
           <Select value={form.skillRating} onChange={(e) => set('skillRating', e.target.value)}>
             <option value="">—</option>
-            {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n}</option>)}
+            {[5, 4, 3, 2, 1].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
           </Select>
         </Field>
         <Field label="Remarks for the client" className="col-span-2">
-          <Textarea value={form.remarks} onChange={(e) => set('remarks', e.target.value)} placeholder="Strengths, gaps, availability for interviews…" />
+          <Textarea
+            value={form.remarks}
+            onChange={(e) => set('remarks', e.target.value)}
+            placeholder="Strengths, gaps, availability for interviews…"
+          />
         </Field>
       </div>
       <div className="mt-12 flex justify-end gap-8">
-        {s && <Button variant="quiet" onClick={() => setEditing(false)}>Cancel</Button>}
-        <Button variant="primary" loading={save.isPending} onClick={() => save.mutate(undefined, { onSuccess: () => setEditing(false) })}>
+        {s && (
+          <Button variant="quiet" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        )}
+        <Button
+          variant="primary"
+          loading={save.isPending}
+          onClick={() => save.mutate(undefined, { onSuccess: () => setEditing(false) })}
+        >
           Save screening
         </Button>
       </div>
@@ -491,18 +745,25 @@ function SubmitDialog({ a, onClose }: { a: ApplicationDetail; onClose: () => voi
       width={480}
       footer={
         <>
-          <Button variant="quiet" onClick={onClose}>Cancel</Button>
+          <Button variant="quiet" onClick={onClose}>
+            Cancel
+          </Button>
           {dupWarning ? (
-            <Button variant="danger" loading={submit.isPending} onClick={() => go(true)}>Submit anyway</Button>
+            <Button variant="danger" loading={submit.isPending} onClick={() => go(true)}>
+              Submit anyway
+            </Button>
           ) : (
-            <Button variant="primary" loading={submit.isPending} onClick={() => go(false)}>Log submission</Button>
+            <Button variant="primary" loading={submit.isPending} onClick={() => go(false)}>
+              Log submission
+            </Button>
           )}
         </>
       }
     >
       <div className="space-y-12">
         <p className="text-10 text-ink-2">
-          Send the profile to {a.requirement.clientName} from your email or WhatsApp as usual, then log it here. The CRM will remind you to chase feedback.
+          Send the profile to {a.requirement.clientName} from your email or WhatsApp as usual, then
+          log it here. The CRM will remind you to chase feedback.
         </p>
         {dupWarning && (
           <p className="flex gap-8 rounded-md bg-brass-soft px-12 py-8 text-10 text-brass-text">
@@ -510,20 +771,38 @@ function SubmitDialog({ a, onClose }: { a: ApplicationDetail; onClose: () => voi
           </p>
         )}
         <div className="grid grid-cols-2 gap-10">
-          <Field label="Sent on"><Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} /></Field>
+          <Field label="Sent on">
+            <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+          </Field>
           <Field label="Channel">
-            <Select value={channel} onChange={(e) => setChannel(e.target.value as SubmissionChannel)}>
-              {SUBMISSION_CHANNELS.map((c) => <option key={c} value={c}>{c === 'whatsapp' ? 'WhatsApp' : c[0].toUpperCase() + c.slice(1)}</option>)}
+            <Select
+              value={channel}
+              onChange={(e) => setChannel(e.target.value as SubmissionChannel)}
+            >
+              {SUBMISSION_CHANNELS.map((c) => (
+                <option key={c} value={c}>
+                  {c === 'whatsapp' ? 'WhatsApp' : c[0].toUpperCase() + c.slice(1)}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>
-        <Field label="Resume sent" hint={a.resumes.length ? undefined : 'No resume uploaded for this candidate yet'}>
+        <Field
+          label="Resume sent"
+          hint={a.resumes.length ? undefined : 'No resume uploaded for this candidate yet'}
+        >
           <Select value={resumeId} onChange={(e) => setResumeId(e.target.value)}>
             {!a.resumes.length && <option value="">—</option>}
-            {a.resumes.map((r) => <option key={r.id} value={r.id}>v{r.versionNo} · {r.fileName}</option>)}
+            {a.resumes.map((r) => (
+              <option key={r.id} value={r.id}>
+                v{r.versionNo} · {r.fileName}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Note (optional)"><Textarea value={note} onChange={(e) => setNote(e.target.value)} /></Field>
+        <Field label="Note (optional)">
+          <Textarea value={note} onChange={(e) => setNote(e.target.value)} />
+        </Field>
       </div>
     </Modal>
   );
@@ -536,9 +815,19 @@ function SubmissionSection({ a }: { a: ApplicationDetail }) {
       <KeyValue
         items={[
           ['Submitted', `${fmtDateTime(a.submittedAt)} by ${a.submittedByName ?? '—'}`],
-          ['Channel', a.submissionChannel === 'whatsapp' ? 'WhatsApp' : a.submissionChannel ?? '—'],
+          [
+            'Channel',
+            a.submissionChannel === 'whatsapp' ? 'WhatsApp' : (a.submissionChannel ?? '—'),
+          ],
           ['Resume sent', resume ? <ResumeLink resume={resume} /> : '—'],
-          ['Client responded', a.feedbackAt ? fmtDateTime(a.feedbackAt) : <span className="text-brass-text">Awaiting feedback</span>],
+          [
+            'Client responded',
+            a.feedbackAt ? (
+              fmtDateTime(a.feedbackAt)
+            ) : (
+              <span className="text-brass-text">Awaiting feedback</span>
+            ),
+          ],
           ...(a.submissionNote ? ([['Note', a.submissionNote]] as [ReactNode, ReactNode][]) : []),
         ]}
       />
@@ -552,17 +841,32 @@ function InterviewsSection({ a }: { a: ApplicationDetail }) {
   const grace = (settings?.interviewOutcomeGraceHours ?? 2) * 3_600_000;
   return (
     <Section title="Interviews">
-      {!a.interviews.length && <p className="text-10 text-ink-3">No rounds logged yet. Coordinate with the client and candidate, then log the round here.</p>}
+      {!a.interviews.length && (
+        <p className="text-10 text-ink-3">
+          No rounds logged yet. Coordinate with the client and candidate, then log the round here.
+        </p>
+      )}
       <ul className="space-y-8">
         {a.interviews.map((i) => {
-          const overdue = INTERVIEW_AWAITING_OUTCOME.includes(i.status) && new Date(i.scheduledAt).getTime() + grace < Date.now();
+          const overdue =
+            INTERVIEW_AWAITING_OUTCOME.includes(i.status) &&
+            new Date(i.scheduledAt).getTime() + grace < Date.now();
           return (
-            <li key={i.id} className={clsx('rounded-md p-10 ring-1', overdue ? 'bg-coral-soft/50 ring-coral/30' : 'ring-ink/[0.08]')}>
+            <li
+              key={i.id}
+              className={clsx(
+                'rounded-md p-10 ring-1',
+                overdue ? 'bg-coral-soft/50 ring-coral/30' : 'ring-ink/[0.08]',
+              )}
+            >
               <div className="flex items-start gap-8">
                 <div className="min-w-0 flex-1">
                   <p className="text-11 font-medium">
                     Round {i.roundNo}
-                    {i.label ? ` · ${i.label}` : ''} <span className="font-normal text-ink-3">· {INTERVIEW_MODE_LABELS[i.mode]}</span>
+                    {i.label ? ` · ${i.label}` : ''}{' '}
+                    <span className="font-normal text-ink-3">
+                      · {INTERVIEW_MODE_LABELS[i.mode]}
+                    </span>
                   </p>
                   <p className="text-10 text-ink-2">
                     {fmtDateTime(i.scheduledAt)}
@@ -570,16 +874,34 @@ function InterviewsSection({ a }: { a: ApplicationDetail }) {
                     {i.coordinatorName ? ` · coordinated by ${i.coordinatorName}` : ''}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-6">
-                    <Pill tone={i.status === 'completed' ? 'good' : ['cancelled', 'candidate_no_show', 'panel_no_show'].includes(i.status) ? 'bad' : 'warn'}>
+                    <Pill
+                      tone={
+                        i.status === 'completed'
+                          ? 'good'
+                          : ['cancelled', 'candidate_no_show', 'panel_no_show'].includes(i.status)
+                            ? 'bad'
+                            : 'warn'
+                      }
+                    >
                       {INTERVIEW_STATUS_LABELS[i.status]}
                     </Pill>
                     {overdue && <Pill tone="bad">Outcome overdue</Pill>}
-                    <Pill tone={i.candidateConfirmed ? 'good' : 'neutral'}>{i.candidateConfirmed ? <Check className="size-12" /> : null}Candidate {i.candidateConfirmed ? 'confirmed' : 'not confirmed'}</Pill>
-                    <Pill tone={i.panelConfirmed ? 'good' : 'neutral'}>{i.panelConfirmed ? <Check className="size-12" /> : null}Panel {i.panelConfirmed ? 'confirmed' : 'not confirmed'}</Pill>
+                    <Pill tone={i.candidateConfirmed ? 'good' : 'neutral'}>
+                      {i.candidateConfirmed ? <Check className="size-12" /> : null}Candidate{' '}
+                      {i.candidateConfirmed ? 'confirmed' : 'not confirmed'}
+                    </Pill>
+                    <Pill tone={i.panelConfirmed ? 'good' : 'neutral'}>
+                      {i.panelConfirmed ? <Check className="size-12" /> : null}Panel{' '}
+                      {i.panelConfirmed ? 'confirmed' : 'not confirmed'}
+                    </Pill>
                   </div>
                   {i.feedback && <p className="mt-6 text-10 text-ink-2">“{i.feedback}”</p>}
                 </div>
-                {a.canWork && <Button size="sm" variant="quiet" onClick={() => setEdit(i)}>Update</Button>}
+                {a.canWork && (
+                  <Button size="sm" variant="quiet" onClick={() => setEdit(i)}>
+                    Update
+                  </Button>
+                )}
               </div>
             </li>
           );
@@ -590,7 +912,15 @@ function InterviewsSection({ a }: { a: ApplicationDetail }) {
   );
 }
 
-function InterviewDialog({ a, interview, onClose }: { a: ApplicationDetail; interview?: Interview; onClose: () => void }) {
+function InterviewDialog({
+  a,
+  interview,
+  onClose,
+}: {
+  a: ApplicationDetail;
+  interview?: Interview;
+  onClose: () => void;
+}) {
   const me = useMe();
   const { data: users } = useUsers();
   const [f, setF] = useState(() => ({
@@ -624,7 +954,12 @@ function InterviewDialog({ a, interview, onClose }: { a: ApplicationDetail; inte
         notes: f.notes || null,
       };
       return interview
-        ? api.patch(`/interviews/${interview.id}`, { ...body, version: interview.version, status: f.status, feedback: f.feedback || null })
+        ? api.patch(`/interviews/${interview.id}`, {
+            ...body,
+            version: interview.version,
+            status: f.status,
+            feedback: f.feedback || null,
+          })
         : api.post(`/applications/${a.id}/interviews`, body);
     },
     interview ? 'Interview updated' : 'Interview logged',
@@ -636,48 +971,111 @@ function InterviewDialog({ a, interview, onClose }: { a: ApplicationDetail; inte
       title={interview ? `Round ${interview.roundNo}` : `Log round ${a.interviews.length + 1}`}
       footer={
         <>
-          <Button variant="quiet" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" loading={save.isPending} disabled={!f.scheduledAt} onClick={() => save.mutate(undefined, { onSuccess: onClose })}>
+          <Button variant="quiet" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            loading={save.isPending}
+            disabled={!f.scheduledAt}
+            onClick={() => save.mutate(undefined, { onSuccess: onClose })}
+          >
             Save
           </Button>
         </>
       }
     >
       <div className="grid grid-cols-2 gap-10">
-        <Field label="Round name"><Input value={f.label} onChange={(e) => set('label', e.target.value)} placeholder="Technical, Managerial, HR…" /></Field>
+        <Field label="Round name">
+          <Input
+            value={f.label}
+            onChange={(e) => set('label', e.target.value)}
+            placeholder="Technical, Managerial, HR…"
+          />
+        </Field>
         <Field label="Mode">
           <Select value={f.mode} onChange={(e) => set('mode', e.target.value)}>
-            {INTERVIEW_MODES.map((m) => <option key={m} value={m}>{INTERVIEW_MODE_LABELS[m]}</option>)}
+            {INTERVIEW_MODES.map((m) => (
+              <option key={m} value={m}>
+                {INTERVIEW_MODE_LABELS[m]}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Date & time"><Input type="datetime-local" value={f.scheduledAt} onChange={(e) => set('scheduledAt', e.target.value)} /></Field>
-        <Field label="Duration (mins)"><Input inputMode="numeric" value={f.durationMins} onChange={(e) => set('durationMins', e.target.value)} /></Field>
-        <Field label="Panel"><Input value={f.panel} onChange={(e) => set('panel', e.target.value)} placeholder="Interviewer names" /></Field>
+        <Field label="Date & time">
+          <Input
+            type="datetime-local"
+            value={f.scheduledAt}
+            onChange={(e) => set('scheduledAt', e.target.value)}
+          />
+        </Field>
+        <Field label="Duration (mins)">
+          <Input
+            inputMode="numeric"
+            value={f.durationMins}
+            onChange={(e) => set('durationMins', e.target.value)}
+          />
+        </Field>
+        <Field label="Panel">
+          <Input
+            value={f.panel}
+            onChange={(e) => set('panel', e.target.value)}
+            placeholder="Interviewer names"
+          />
+        </Field>
         <Field label="Coordinator">
           <Select value={f.coordinatorId} onChange={(e) => set('coordinatorId', e.target.value)}>
-            {users?.filter((u) => u.active).map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {users
+              ?.filter((u) => u.active)
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
           </Select>
         </Field>
-        <Field label="Venue or meeting link" className="col-span-2"><Input value={f.location} onChange={(e) => set('location', e.target.value)} /></Field>
+        <Field label="Venue or meeting link" className="col-span-2">
+          <Input value={f.location} onChange={(e) => set('location', e.target.value)} />
+        </Field>
         <div className="col-span-2 flex flex-wrap gap-16">
-          <Checkbox label="Candidate confirmed" checked={f.candidateConfirmed} onChange={(v) => set('candidateConfirmed', v)} />
-          <Checkbox label="Panel confirmed" checked={f.panelConfirmed} onChange={(v) => set('panelConfirmed', v)} />
+          <Checkbox
+            label="Candidate confirmed"
+            checked={f.candidateConfirmed}
+            onChange={(v) => set('candidateConfirmed', v)}
+          />
+          <Checkbox
+            label="Panel confirmed"
+            checked={f.panelConfirmed}
+            onChange={(v) => set('panelConfirmed', v)}
+          />
         </div>
         {interview && (
           <>
             <Field label="Status" className="col-span-2">
               <Select value={f.status} onChange={(e) => set('status', e.target.value)}>
-                {INTERVIEW_STATUSES.map((s) => <option key={s} value={s}>{INTERVIEW_STATUS_LABELS[s]}</option>)}
+                {INTERVIEW_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {INTERVIEW_STATUS_LABELS[s]}
+                  </option>
+                ))}
               </Select>
             </Field>
-            <Field label="Client feedback" className="col-span-2"><Textarea value={f.feedback} onChange={(e) => set('feedback', e.target.value)} /></Field>
+            <Field label="Client feedback" className="col-span-2">
+              <Textarea value={f.feedback} onChange={(e) => set('feedback', e.target.value)} />
+            </Field>
           </>
         )}
-        <Field label="Notes" className="col-span-2"><Textarea value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
+        <Field label="Notes" className="col-span-2">
+          <Textarea value={f.notes} onChange={(e) => set('notes', e.target.value)} />
+        </Field>
       </div>
-      {interview?.status !== f.status && f.status === 'completed' && a.status === 'interviewing' && (
-        <p className="mt-10 text-9 text-ink-3">The candidate will move to “Feedback pending” until you record the client's decision.</p>
-      )}
+      {interview?.status !== f.status &&
+        f.status === 'completed' &&
+        a.status === 'interviewing' && (
+          <p className="mt-10 text-9 text-ink-3">
+            The candidate will move to “Feedback pending” until you record the client's decision.
+          </p>
+        )}
     </Modal>
   );
 }
@@ -709,7 +1107,16 @@ function OfferSection({ a }: { a: ApplicationDetail }) {
   );
   if (!editing && o) {
     return (
-      <Section title="Offer" action={a.canWork && <Button size="sm" variant="quiet" onClick={() => setEditing(true)}>Edit</Button>}>
+      <Section
+        title="Offer"
+        action={
+          a.canWork && (
+            <Button size="sm" variant="quiet" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          )
+        }
+      >
         <KeyValue
           items={[
             ['Offered CTC', formatLpa(o.offeredCtc)],
@@ -727,16 +1134,60 @@ function OfferSection({ a }: { a: ApplicationDetail }) {
   return (
     <Section title="Offer & salary discussion">
       <div className="grid grid-cols-2 gap-10">
-        <Field label="Offered CTC (lakhs p.a.)"><Input inputMode="decimal" value={f.offeredCtc} onChange={(e) => set('offeredCtc', e.target.value)} /></Field>
-        <Field label="Designation"><Input value={f.designation} onChange={(e) => set('designation', e.target.value)} /></Field>
-        <Field label="Offer date"><Input type="date" value={f.offerDate} onChange={(e) => set('offerDate', e.target.value)} /></Field>
-        <Field label="Expected joining date"><Input type="date" value={f.expectedDoj} onChange={(e) => set('expectedDoj', e.target.value)} /></Field>
-        {a.stage === 'joining' && <Field label="Actual joining date"><Input type="date" value={f.actualDoj} onChange={(e) => set('actualDoj', e.target.value)} /></Field>}
-        <Field label="Notes" className="col-span-2"><Textarea value={f.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Negotiation history, counter-offers…" /></Field>
+        <Field label="Offered CTC (lakhs p.a.)">
+          <Input
+            inputMode="decimal"
+            value={f.offeredCtc}
+            onChange={(e) => set('offeredCtc', e.target.value)}
+          />
+        </Field>
+        <Field label="Designation">
+          <Input value={f.designation} onChange={(e) => set('designation', e.target.value)} />
+        </Field>
+        <Field label="Offer date">
+          <Input
+            type="date"
+            value={f.offerDate}
+            onChange={(e) => set('offerDate', e.target.value)}
+          />
+        </Field>
+        <Field label="Expected joining date">
+          <Input
+            type="date"
+            value={f.expectedDoj}
+            onChange={(e) => set('expectedDoj', e.target.value)}
+          />
+        </Field>
+        {a.stage === 'joining' && (
+          <Field label="Actual joining date">
+            <Input
+              type="date"
+              value={f.actualDoj}
+              onChange={(e) => set('actualDoj', e.target.value)}
+            />
+          </Field>
+        )}
+        <Field label="Notes" className="col-span-2">
+          <Textarea
+            value={f.notes}
+            onChange={(e) => set('notes', e.target.value)}
+            placeholder="Negotiation history, counter-offers…"
+          />
+        </Field>
       </div>
       <div className="mt-12 flex justify-end gap-8">
-        {o && <Button variant="quiet" onClick={() => setEditing(false)}>Cancel</Button>}
-        <Button variant="primary" loading={save.isPending} onClick={() => save.mutate(undefined, { onSuccess: () => setEditing(false) })}>Save offer</Button>
+        {o && (
+          <Button variant="quiet" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        )}
+        <Button
+          variant="primary"
+          loading={save.isPending}
+          onClick={() => save.mutate(undefined, { onSuccess: () => setEditing(false) })}
+        >
+          Save offer
+        </Button>
       </div>
     </Section>
   );
@@ -745,19 +1196,45 @@ function OfferSection({ a }: { a: ApplicationDetail }) {
 function RiskSection({ a }: { a: ApplicationDetail }) {
   const [risk, setRisk] = useState<JoiningRisk | ''>(a.joiningRisk ?? '');
   const [note, setNote] = useState(a.joiningRiskNote ?? '');
-  const save = useAppMutation(a, () => api.post(`/applications/${a.id}/risk`, { version: a.version, risk: risk || null, note: note || null }), 'Joining risk updated');
+  const save = useAppMutation(
+    a,
+    () =>
+      api.post(`/applications/${a.id}/risk`, {
+        version: a.version,
+        risk: risk || null,
+        note: note || null,
+      }),
+    'Joining risk updated',
+  );
   if (!a.canWork) return null;
   return (
-    <Section title="Joining risk" action={<span className="text-9 text-ink-3">Shown on the dashboard</span>}>
+    <Section
+      title="Joining risk"
+      action={<span className="text-9 text-ink-3">Shown on the dashboard</span>}
+    >
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-10">
         <Select value={risk} onChange={(e) => setRisk(e.target.value as JoiningRisk | '')}>
           <option value="">No risk</option>
-          {JOINING_RISKS.map((r) => <option key={r} value={r}>{JOINING_RISK_LABELS[r]}</option>)}
+          {JOINING_RISKS.map((r) => (
+            <option key={r} value={r}>
+              {JOINING_RISK_LABELS[r]}
+            </option>
+          ))}
         </Select>
-        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What did the candidate say?" />
+        <Input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="What did the candidate say?"
+        />
       </div>
       <div className="mt-10 flex justify-end">
-        <Button size="sm" variant="primary" loading={save.isPending} disabled={risk === (a.joiningRisk ?? '') && note === (a.joiningRiskNote ?? '')} onClick={() => save.mutate(undefined)}>
+        <Button
+          size="sm"
+          variant="primary"
+          loading={save.isPending}
+          disabled={risk === (a.joiningRisk ?? '') && note === (a.joiningRiskNote ?? '')}
+          onClick={() => save.mutate(undefined)}
+        >
           Save
         </Button>
       </div>
@@ -794,27 +1271,67 @@ function PlacementSection({ a }: { a: ApplicationDetail }) {
   if (!canSeeFees(me.role)) {
     return (
       <Section title="Placement">
-        <KeyValue items={[['Joined on', fmtDate(p.joinedOn)], ['Replacement guarantee until', fmtDate(p.guaranteeUntil)]]} />
+        <KeyValue
+          items={[
+            ['Joined on', fmtDate(p.joinedOn)],
+            ['Replacement guarantee until', fmtDate(p.guaranteeUntil)],
+          ]}
+        />
       </Section>
     );
   }
   return (
-    <Section title="Placement & invoice" action={<span className="text-9 text-ink-3">Guarantee until {fmtDate(p.guaranteeUntil)}</span>}>
+    <Section
+      title="Placement & invoice"
+      action={
+        <span className="text-9 text-ink-3">Guarantee until {fmtDate(p.guaranteeUntil)}</span>
+      }
+    >
       <div className="grid grid-cols-2 gap-10">
-        <Field label="Joined on"><Input value={fmtDate(p.joinedOn)} disabled /></Field>
-        <Field label="Fee (₹)" hint={p.feeAmount != null ? formatInr(p.feeAmount) : undefined}><Input inputMode="numeric" value={f.feeAmount} onChange={(e) => set('feeAmount', e.target.value)} /></Field>
+        <Field label="Joined on">
+          <Input value={fmtDate(p.joinedOn)} disabled />
+        </Field>
+        <Field label="Fee (₹)" hint={p.feeAmount != null ? formatInr(p.feeAmount) : undefined}>
+          <Input
+            inputMode="numeric"
+            value={f.feeAmount}
+            onChange={(e) => set('feeAmount', e.target.value)}
+          />
+        </Field>
         <Field label="Invoice status">
           <Select value={f.invoiceStatus} onChange={(e) => set('invoiceStatus', e.target.value)}>
-            {INVOICE_STATUSES.map((s) => <option key={s} value={s}>{INVOICE_STATUS_LABELS[s]}</option>)}
+            {INVOICE_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {INVOICE_STATUS_LABELS[s]}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Invoice number"><Input value={f.invoiceNo} onChange={(e) => set('invoiceNo', e.target.value)} /></Field>
-        <Field label="Invoice date"><Input type="date" value={f.invoiceDate} onChange={(e) => set('invoiceDate', e.target.value)} /></Field>
-        <Field label="Paid on"><Input type="date" value={f.paidOn} onChange={(e) => set('paidOn', e.target.value)} /></Field>
-        <Field label="Candidate left on" hint="Within the guarantee period, a replacement is due" className="col-span-2"><Input type="date" value={f.leftOn} onChange={(e) => set('leftOn', e.target.value)} /></Field>
+        <Field label="Invoice number">
+          <Input value={f.invoiceNo} onChange={(e) => set('invoiceNo', e.target.value)} />
+        </Field>
+        <Field label="Invoice date">
+          <Input
+            type="date"
+            value={f.invoiceDate}
+            onChange={(e) => set('invoiceDate', e.target.value)}
+          />
+        </Field>
+        <Field label="Paid on">
+          <Input type="date" value={f.paidOn} onChange={(e) => set('paidOn', e.target.value)} />
+        </Field>
+        <Field
+          label="Candidate left on"
+          hint="Within the guarantee period, a replacement is due"
+          className="col-span-2"
+        >
+          <Input type="date" value={f.leftOn} onChange={(e) => set('leftOn', e.target.value)} />
+        </Field>
       </div>
       <div className="mt-12 flex justify-end">
-        <Button variant="primary" loading={save.isPending} onClick={() => save.mutate(undefined)}>Save</Button>
+        <Button variant="primary" loading={save.isPending} onClick={() => save.mutate(undefined)}>
+          Save
+        </Button>
       </div>
     </Section>
   );
@@ -822,19 +1339,38 @@ function PlacementSection({ a }: { a: ApplicationDetail }) {
 
 function NotesSection({ a }: { a: ApplicationDetail }) {
   const [body, setBody] = useState('');
-  const add = useAppMutation(a, () => api.post(`/candidates/${a.candidateId}/notes`, { body, applicationId: a.id }));
+  const add = useAppMutation(a, () =>
+    api.post(`/candidates/${a.candidateId}/notes`, { body, applicationId: a.id }),
+  );
   return (
     <Section title="Notes" action={<FileText className="size-14 text-ink-3" strokeWidth={1.8} />}>
       <div className="flex gap-8">
-        <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Add a note for the team" onKeyDown={(e) => e.key === 'Enter' && body.trim() && add.mutate(undefined, { onSuccess: () => setBody('') })} />
-        <Button disabled={!body.trim()} loading={add.isPending} onClick={() => add.mutate(undefined, { onSuccess: () => setBody('') })}>Add</Button>
+        <Input
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Add a note for the team"
+          onKeyDown={(e) =>
+            e.key === 'Enter' &&
+            body.trim() &&
+            add.mutate(undefined, { onSuccess: () => setBody('') })
+          }
+        />
+        <Button
+          disabled={!body.trim()}
+          loading={add.isPending}
+          onClick={() => add.mutate(undefined, { onSuccess: () => setBody('') })}
+        >
+          Add
+        </Button>
       </div>
       {a.notes.length > 0 && (
         <ul className="mt-10 space-y-8">
           {a.notes.map((n) => (
             <li key={n.id} className="text-10">
               <p className="whitespace-pre-wrap">{n.body}</p>
-              <p className="text-9 text-ink-3">{n.authorName} · {fmtDateTime(n.createdAt)}</p>
+              <p className="text-9 text-ink-3">
+                {n.authorName} · {fmtDateTime(n.createdAt)}
+              </p>
             </li>
           ))}
         </ul>
@@ -842,4 +1378,3 @@ function NotesSection({ a }: { a: ApplicationDetail }) {
     </Section>
   );
 }
-

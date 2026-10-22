@@ -15,17 +15,33 @@ const fullCard = {
 
 describe('checkMove', () => {
   it('allows any status within a stage', () => {
-    expect(checkMove({ stage: 'sourced', status: 'contacted' }, { stage: 'sourced', status: 'interested' }).ok).toBe(true);
+    expect(
+      checkMove(
+        { stage: 'sourced', status: 'contacted' },
+        { stage: 'sourced', status: 'interested' },
+      ).ok,
+    ).toBe(true);
   });
 
   it('requires the gate status to move forward', () => {
-    const r = checkMove({ stage: 'sourced', status: 'contacted' }, { stage: 'screening', status: 'screening_pending' });
+    const r = checkMove(
+      { stage: 'sourced', status: 'contacted' },
+      { stage: 'screening', status: 'screening_pending' },
+    );
     expect(r.ok).toBe(false);
-    expect(checkMove({ stage: 'sourced', status: 'interested' }, { stage: 'screening', status: 'screening_pending' }).ok).toBe(true);
+    expect(
+      checkMove(
+        { stage: 'sourced', status: 'interested' },
+        { stage: 'screening', status: 'screening_pending' },
+      ).ok,
+    ).toBe(true);
   });
 
   it('forbids skipping stages', () => {
-    const r = checkMove({ stage: 'sourced', status: 'interested' }, { stage: 'submitted', status: 'feedback_pending' });
+    const r = checkMove(
+      { stage: 'sourced', status: 'interested' },
+      { stage: 'submitted', status: 'feedback_pending' },
+    );
     expect(r).toEqual({ ok: false, error: 'Stages cannot be skipped' });
   });
 
@@ -45,8 +61,19 @@ describe('checkMove', () => {
   });
 
   it('allows withdraw from any stage but only in place', () => {
-    expect(checkMove({ stage: 'offer', status: 'negotiation' }, { stage: 'offer', status: 'requirement_cancelled' }).ok).toBe(true);
-    expect(checkMove({ stage: 'offer', status: 'negotiation' }, { stage: 'joining', status: 'withdrawn' }, { reasonId: 1 }).ok).toBe(false);
+    expect(
+      checkMove(
+        { stage: 'offer', status: 'negotiation' },
+        { stage: 'offer', status: 'requirement_cancelled' },
+      ).ok,
+    ).toBe(true);
+    expect(
+      checkMove(
+        { stage: 'offer', status: 'negotiation' },
+        { stage: 'joining', status: 'withdrawn' },
+        { reasonId: 1 },
+      ).ok,
+    ).toBe(false);
   });
 
   it('requires an offer with DOJ before joining', () => {
@@ -57,12 +84,25 @@ describe('checkMove', () => {
   });
 
   it('moves backwards onto the entry status only', () => {
-    expect(checkMove({ stage: 'interview', status: 'interviewing' }, { stage: 'submitted', status: 'feedback_pending' }).ok).toBe(true);
-    expect(checkMove({ stage: 'interview', status: 'interviewing' }, { stage: 'submitted', status: 'client_shortlisted' }).ok).toBe(false);
+    expect(
+      checkMove(
+        { stage: 'interview', status: 'interviewing' },
+        { stage: 'submitted', status: 'feedback_pending' },
+      ).ok,
+    ).toBe(true);
+    expect(
+      checkMove(
+        { stage: 'interview', status: 'interviewing' },
+        { stage: 'submitted', status: 'client_shortlisted' },
+      ).ok,
+    ).toBe(false);
   });
 
   it('rejects statuses from another stage', () => {
-    expect(checkMove({ stage: 'sourced', status: 'contacted' }, { stage: 'sourced', status: 'joined' }).ok).toBe(false);
+    expect(
+      checkMove({ stage: 'sourced', status: 'contacted' }, { stage: 'sourced', status: 'joined' })
+        .ok,
+    ).toBe(false);
   });
 });
 

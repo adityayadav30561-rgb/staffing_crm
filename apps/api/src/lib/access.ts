@@ -11,10 +11,20 @@ export async function requirementAccess(tx: Tx, requirementId: number, user: Ses
   const [a] = await tx
     .select()
     .from(requirementAssignees)
-    .where(and(eq(requirementAssignees.requirementId, requirementId), eq(requirementAssignees.userId, user.id)));
+    .where(
+      and(
+        eq(requirementAssignees.requirementId, requirementId),
+        eq(requirementAssignees.userId, user.id),
+      ),
+    );
   const isOwner = req.ownerId === user.id;
   const isAssignee = !!a;
-  return { requirement: req, isOwner, isAssignee, canWork: canWorkRequirement(user.role, isOwner, isAssignee) };
+  return {
+    requirement: req,
+    isOwner,
+    isAssignee,
+    canWork: canWorkRequirement(user.role, isOwner, isAssignee),
+  };
 }
 
 /** Only the owner, assigned recruiters and managers may work a requirement's pipeline. */

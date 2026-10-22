@@ -57,7 +57,11 @@ export const INTERVIEW_STATUS_LABELS: Record<InterviewStatus, string> = {
   pending: 'Outcome pending',
 };
 /** Interview statuses that still wait for an outcome to be logged. */
-export const INTERVIEW_AWAITING_OUTCOME: InterviewStatus[] = ['scheduled', 'rescheduled', 'pending'];
+export const INTERVIEW_AWAITING_OUTCOME: InterviewStatus[] = [
+  'scheduled',
+  'rescheduled',
+  'pending',
+];
 
 export const INVOICE_STATUSES = ['to_raise', 'raised', 'paid'] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];

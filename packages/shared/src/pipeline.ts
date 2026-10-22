@@ -2,7 +2,14 @@
 // and which data a move requires. The API enforces it; the web app uses it to drive the UI.
 import type { LookupKind } from './enums';
 
-export const STAGES = ['sourced', 'screening', 'submitted', 'interview', 'offer', 'joining'] as const;
+export const STAGES = [
+  'sourced',
+  'screening',
+  'submitted',
+  'interview',
+  'offer',
+  'joining',
+] as const;
 export type Stage = (typeof STAGES)[number];
 
 export const STAGE_LABELS: Record<Stage, string> = {
@@ -171,7 +178,16 @@ export interface ScreeningCard {
 /** Fields of the screening card that must be filled before a profile goes to the client. */
 export function missingScreeningFields(card: Partial<ScreeningCard> | null | undefined): string[] {
   const missing: string[] = [];
-  if (!card) return ['interested', 'currentCtc', 'expectedCtc', 'noticeDays', 'currentLocation', 'skillRating', 'remarks'];
+  if (!card)
+    return [
+      'interested',
+      'currentCtc',
+      'expectedCtc',
+      'noticeDays',
+      'currentLocation',
+      'skillRating',
+      'remarks',
+    ];
   if (card.interested !== true) missing.push('interested');
   if (card.currentCtc == null) missing.push('currentCtc');
   if (card.expectedCtc == null) missing.push('expectedCtc');
@@ -216,9 +232,13 @@ export function checkMove(
   const toIdx = stageIndex(to.stage);
 
   if (ANY_STAGE_STATUSES.includes(to.status)) {
-    if (to.stage !== from.stage) return { ok: false, error: 'Close the application in its current stage' };
+    if (to.stage !== from.stage)
+      return { ok: false, error: 'Close the application in its current stage' };
   } else if (!STAGE_STATUSES[to.stage].includes(to.status)) {
-    return { ok: false, error: `"${STATUS_LABELS[to.status]}" is not a ${STAGE_LABELS[to.stage]} status` };
+    return {
+      ok: false,
+      error: `"${STATUS_LABELS[to.status]}" is not a ${STAGE_LABELS[to.stage]} status`,
+    };
   } else if (toIdx === fromIdx + 1) {
     const gate = STAGE_GATE[from.stage];
     if (from.status !== gate) {
@@ -228,12 +248,18 @@ export function checkMove(
       };
     }
     if (to.status !== STAGE_ENTRY_STATUS[to.stage]) {
-      return { ok: false, error: `New ${STAGE_LABELS[to.stage]} entries start as "${STATUS_LABELS[STAGE_ENTRY_STATUS[to.stage]]}"` };
+      return {
+        ok: false,
+        error: `New ${STAGE_LABELS[to.stage]} entries start as "${STATUS_LABELS[STAGE_ENTRY_STATUS[to.stage]]}"`,
+      };
     }
   } else if (toIdx > fromIdx + 1) {
     return { ok: false, error: 'Stages cannot be skipped' };
   } else if (toIdx < fromIdx && to.status !== STAGE_ENTRY_STATUS[to.stage]) {
-    return { ok: false, error: `Moving back lands on "${STATUS_LABELS[STAGE_ENTRY_STATUS[to.stage]]}"` };
+    return {
+      ok: false,
+      error: `Moving back lands on "${STATUS_LABELS[STAGE_ENTRY_STATUS[to.stage]]}"`,
+    };
   }
 
   if (REASON_KIND_FOR_STATUS[to.status] && !ctx.reasonId) {
@@ -241,8 +267,10 @@ export function checkMove(
   }
   if (to.stage === 'submitted' && from.stage === 'screening') {
     const missing = missingScreeningFields(ctx.screening);
-    if (missing.length) return { ok: false, error: `Complete the screening card first (${missing.join(', ')})` };
-    if (!ctx.hasSubmission) return { ok: false, error: 'Log the submission (date and channel) first' };
+    if (missing.length)
+      return { ok: false, error: `Complete the screening card first (${missing.join(', ')})` };
+    if (!ctx.hasSubmission)
+      return { ok: false, error: 'Log the submission (date and channel) first' };
   }
   if (to.stage === 'joining' && from.stage === 'offer' && !ctx.hasOfferWithDoj) {
     return { ok: false, error: 'Record the offer with an expected joining date first' };
@@ -251,11 +279,24 @@ export function checkMove(
 }
 
 /** Pill colours (Nirman tokens) for each status group. */
-export function statusTone(status: AppStatus): 'new' | 'neutral' | 'warn' | 'info' | 'good' | 'bad' {
+export function statusTone(
+  status: AppStatus,
+): 'new' | 'neutral' | 'warn' | 'info' | 'good' | 'bad' {
   if (status === 'joined' || status === 'selected' || status === 'offer_accepted') return 'good';
   if (isClosed(status)) return 'bad';
-  if (['client_shortlisted', 'screened_ok', 'interested', 'offer_released'].includes(status)) return 'info';
-  if (['feedback_pending', 'decision_pending', 'client_on_hold', 'decision_on_hold', 'joining_deferred', 'negotiation'].includes(status)) return 'warn';
+  if (['client_shortlisted', 'screened_ok', 'interested', 'offer_released'].includes(status))
+    return 'info';
+  if (
+    [
+      'feedback_pending',
+      'decision_pending',
+      'client_on_hold',
+      'decision_on_hold',
+      'joining_deferred',
+      'negotiation',
+    ].includes(status)
+  )
+    return 'warn';
   if (status === 'contacted' || status === 'screening_pending') return 'new';
   return 'neutral';
 }

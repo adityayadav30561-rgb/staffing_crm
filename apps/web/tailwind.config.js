@@ -1,7 +1,11 @@
 // Nirman design tokens (docs/design/tokens.json). The CRM type scale is the 1240px-frame scale
 // enlarged ~1.2x for a full-screen app: fs-9 -> 11px, fs-11 -> 13px, fs-24 -> 28px.
 // Spacing is in px like the design spec ("padding 12 x 7" -> px-12 py-7).
-const px = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48, 56, 64, 72, 80, 96, 112, 128, 160, 192, 224, 240, 256, 288, 320, 360, 384, 420, 480, 560, 640, 720];
+const px = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 26, 28, 32, 36, 40, 44, 48,
+  56, 64, 72, 80, 96, 112, 128, 160, 192, 224, 240, 256, 288, 320, 360, 384, 420, 480, 560, 640,
+  720,
+];
 const spacing = Object.fromEntries(px.map((n) => [n, `${n}px`]));
 
 /** @type {import('tailwindcss').Config} */

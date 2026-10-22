@@ -43,7 +43,10 @@ declare module 'fastify' {
 
 const PUBLIC_PATHS = ['/api/auth/login', '/api/health', '/api/public/', '/api/files/'];
 
-export async function buildApp(cfg: Config, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
+export async function buildApp(
+  cfg: Config,
+  opts: { logger?: boolean } = {},
+): Promise<FastifyInstance> {
   const app = Fastify({
     logger: opts.logger ?? false,
     trustProxy: true,
@@ -156,7 +159,14 @@ async function loadSession(app: FastifyInstance, req: FastifyRequest): Promise<S
       .set({ expiresAt: new Date(now.getTime() + SESSION_TTL_MS) })
       .where(eq(sessions.id, id));
   }
-  return { id: row.id, name: row.name, email: row.email, role: row.role, csrfToken: row.csrfToken, sessionId: id };
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    csrfToken: row.csrfToken,
+    sessionId: id,
+  };
 }
 
 /** Throws 403 unless the user has one of the roles (admin always passes manager checks). */

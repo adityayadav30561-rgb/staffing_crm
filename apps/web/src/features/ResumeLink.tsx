@@ -4,7 +4,13 @@ import type { Resume } from '../lib/types';
 import { useToast } from '../components/toast';
 
 /** Opens a resume through a short-lived signed URL. */
-export function ResumeLink({ resume, label }: { resume: Pick<Resume, 'id' | 'fileName' | 'versionNo'>; label?: string }) {
+export function ResumeLink({
+  resume,
+  label,
+}: {
+  resume: Pick<Resume, 'id' | 'fileName' | 'versionNo'>;
+  label?: string;
+}) {
   const toast = useToast();
   const open = async () => {
     const win = window.open('', '_blank');
@@ -18,7 +24,10 @@ export function ResumeLink({ resume, label }: { resume: Pick<Resume, 'id' | 'fil
     }
   };
   return (
-    <button onClick={() => void open()} className="inline-flex max-w-full items-center gap-4 text-forest-2 hover:underline">
+    <button
+      onClick={() => void open()}
+      className="inline-flex max-w-full items-center gap-4 text-forest-2 hover:underline"
+    >
       <FileText className="size-12 shrink-0" strokeWidth={1.8} />
       <span className="truncate">{label ?? `v${resume.versionNo} · ${resume.fileName}`}</span>
     </button>

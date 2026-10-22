@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { '/api': 'http://localhost:3001' },
+    proxy: { '/api': process.env.API_URL ?? 'http://localhost:3001' },
   },
-  build: { outDir: 'dist', sourcemap: true },
+  // One bundle (~140 kB gzipped) is fine for an internal tool used on office laptops.
+  build: { outDir: 'dist', sourcemap: true, chunkSizeWarningLimit: 700 },
 });

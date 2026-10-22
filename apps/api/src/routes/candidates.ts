@@ -26,6 +26,7 @@ import { badRequest, notFound } from '../lib/errors';
 import { createdChanges, logActivity, writeAudit } from '../lib/audit';
 import { updateVersioned } from '../lib/lock';
 import { findDuplicates } from '../lib/duplicates';
+import { outer } from '../lib/sql';
 import { ALLOWED_DOC_TYPES, newKey, sniffDocType } from '../lib/storage';
 import { sendXlsx, toXlsx } from '../lib/xlsx';
 
@@ -70,11 +71,20 @@ function listConditions(q: ListQuery): SQL[] {
     );
   }
   if (q.skill) {
-    for (const s of q.skill.split(',').map((x) => x.trim()).filter(Boolean)) {
+    for (const s of q.skill
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean)) {
       conds.push(sql`array_to_string(${candidates.skills}, ',') ilike ${'%' + s + '%'}`);
     }
   }
-  if (q.location) conds.push(or(ilike(candidates.location, `%${q.location}%`), ilike(candidates.preferredLocations, `%${q.location}%`))!);
+  if (q.location)
+    conds.push(
+      or(
+        ilike(candidates.location, `%${q.location}%`),
+        ilike(candidates.preferredLocations, `%${q.location}%`),
+      )!,
+    );
   if (q.expMin) conds.push(gte(candidates.totalExp, Number(q.expMin)));
   if (q.expMax) conds.push(lte(candidates.totalExp, Number(q.expMax)));
   if (q.noticeMax) conds.push(lte(candidates.noticeDays, Number(q.noticeMax)));
@@ -83,7 +93,7 @@ function listConditions(q: ListQuery): SQL[] {
   return conds;
 }
 
-const activeAppsSql = sql<number>`(select count(*)::int from ${applications} a where a.candidate_id = ${candidates.id} and a.closed_at is null)`;
+const activeAppsSql = sql<number>`(select count(*)::int from ${applications} a where a.candidate_id = ${outer('candidates', 'id')} and a.closed_at is null)`;
 
 export async function candidateRoutes(app: FastifyInstance) {
   app.get<{ Querystring: ListQuery }>('/api/candidates', async (req) => {
@@ -101,13 +111,20 @@ export async function candidateRoutes(app: FastifyInstance) {
         .orderBy(desc(candidates.updatedAt))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
-      app.db.select({ total: sql<number>`count(*)::int` }).from(candidates).where(where),
+      app.db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(candidates)
+        .where(where),
     ]);
     return {
       total,
       page,
       pageSize,
-      items: rows.map((r) => ({ ...r.c, sourcedByName: r.sourcedByName, activeApps: r.activeApps })),
+      items: rows.map((r) => ({
+        ...r.c,
+        sourcedByName: r.sourcedByName,
+        activeApps: r.activeApps,
+      })),
     };
   });
 
@@ -119,33 +136,45 @@ export async function candidateRoutes(app: FastifyInstance) {
       .leftJoin(users, eq(users.id, candidates.sourcedBy))
       .where(and(...listConditions(req.query)))
       .orderBy(desc(candidates.updatedAt));
-    const buf = await toXlsx('Candidates', [
-      { header: 'Name', value: (r) => r.c.name, width: 24 },
-      { header: 'Phone', value: (r) => r.c.phone, width: 16 },
-      { header: 'Email', value: (r) => r.c.email, width: 28 },
-      { header: 'Current company', value: (r) => r.c.currentCompany, width: 22 },
-      { header: 'Designation', value: (r) => r.c.currentTitle, width: 22 },
-      { header: 'Experience (yrs)', value: (r) => r.c.totalExp },
-      { header: 'Current CTC', value: (r) => r.c.currentCtc },
-      { header: 'Expected CTC', value: (r) => r.c.expectedCtc },
-      { header: 'Notice (days)', value: (r) => r.c.noticeDays },
-      { header: 'Location', value: (r) => r.c.location },
-      { header: 'Skills', value: (r) => r.c.skills.join(', '), width: 30 },
-      { header: 'Source', value: (r) => r.c.source },
-      { header: 'Sourced by', value: (r) => r.sourcedByName },
-      { header: 'Added on', value: (r) => r.c.createdAt },
-    ], rows);
+    const buf = await toXlsx(
+      'Candidates',
+      [
+        { header: 'Name', value: (r) => r.c.name, width: 24 },
+        { header: 'Phone', value: (r) => r.c.phone, width: 16 },
+        { header: 'Email', value: (r) => r.c.email, width: 28 },
+        { header: 'Current company', value: (r) => r.c.currentCompany, width: 22 },
+        { header: 'Designation', value: (r) => r.c.currentTitle, width: 22 },
+        { header: 'Experience (yrs)', value: (r) => r.c.totalExp },
+        { header: 'Current CTC', value: (r) => r.c.currentCtc },
+        { header: 'Expected CTC', value: (r) => r.c.expectedCtc },
+        { header: 'Notice (days)', value: (r) => r.c.noticeDays },
+        { header: 'Location', value: (r) => r.c.location },
+        { header: 'Skills', value: (r) => r.c.skills.join(', '), width: 30 },
+        { header: 'Source', value: (r) => r.c.source },
+        { header: 'Sourced by', value: (r) => r.sourcedByName },
+        { header: 'Added on', value: (r) => r.c.createdAt },
+      ],
+      rows,
+    );
     return sendXlsx(reply, `candidates-${new Date().toISOString().slice(0, 10)}.xlsx`, buf);
   });
 
-  app.get<{ Querystring: { phone?: string; email?: string; name?: string; currentCompany?: string; excludeId?: string } }>(
-    '/api/candidates/duplicates',
-    async (req) => {
-      me(req);
-      const q = req.query;
-      return findDuplicates(app.db, { ...q, excludeId: q.excludeId ? Number(q.excludeId) : undefined });
-    },
-  );
+  app.get<{
+    Querystring: {
+      phone?: string;
+      email?: string;
+      name?: string;
+      currentCompany?: string;
+      excludeId?: string;
+    };
+  }>('/api/candidates/duplicates', async (req) => {
+    me(req);
+    const q = req.query;
+    return findDuplicates(app.db, {
+      ...q,
+      excludeId: q.excludeId ? Number(q.excludeId) : undefined,
+    });
+  });
 
   app.get<{ Params: { id: string } }>('/api/candidates/:id', async (req) => {
     me(req);
@@ -156,7 +185,9 @@ export async function candidateRoutes(app: FastifyInstance) {
       .leftJoin(users, eq(users.id, candidates.sourcedBy))
       .where(eq(candidates.id, id));
     if (!row) throw notFound('Candidate');
-    const submitter = sql<string | null>`(select name from ${users} su where su.id = ${applications.submittedBy})`;
+    const submitter = sql<
+      string | null
+    >`(select name from ${users} su where su.id = ${outer('applications', 'submitted_by')})`;
     const [resumeRows, apps, notes, timeline] = await Promise.all([
       app.db
         .select({ r: resumes, uploadedByName: users.name })
@@ -191,7 +222,13 @@ export async function candidateRoutes(app: FastifyInstance) {
         .where(eq(candidateNotes.candidateId, id))
         .orderBy(desc(candidateNotes.createdAt)),
       app.db
-        .select({ id: activities.id, summary: activities.summary, verb: activities.verb, createdAt: activities.createdAt, actorName: users.name })
+        .select({
+          id: activities.id,
+          summary: activities.summary,
+          verb: activities.verb,
+          createdAt: activities.createdAt,
+          actorName: users.name,
+        })
         .from(activities)
         .leftJoin(users, eq(users.id, activities.actorId))
         .where(eq(activities.candidateId, id))
@@ -232,8 +269,21 @@ export async function candidateRoutes(app: FastifyInstance) {
     const id = Number(req.params.id);
     const { version, ...body } = candidateUpdateSchema.parse(req.body);
     return app.db.transaction(async (tx) => {
-      const row = await updateVersioned<CandRow>(tx, candidates, 'candidate', id, version, { ...body, ...normalizedFields(body) }, u.id);
-      await logActivity(tx, { actorId: u.id, verb: 'candidate.updated', summary: `Updated profile of ${row.name}`, candidateId: id });
+      const row = await updateVersioned<CandRow>(
+        tx,
+        candidates,
+        'candidate',
+        id,
+        version,
+        { ...body, ...normalizedFields(body) },
+        u.id,
+      );
+      await logActivity(tx, {
+        actorId: u.id,
+        verb: 'candidate.updated',
+        summary: `Updated profile of ${row.name}`,
+        candidateId: id,
+      });
       return row;
     });
   });
@@ -242,7 +292,10 @@ export async function candidateRoutes(app: FastifyInstance) {
     const u = requireRole(req, 'manager');
     const id = Number(req.params.id);
     const keys = await app.db.transaction(async (tx) => {
-      const files = await tx.select({ key: resumes.storageKey }).from(resumes).where(eq(resumes.candidateId, id));
+      const files = await tx
+        .select({ key: resumes.storageKey })
+        .from(resumes)
+        .where(eq(resumes.candidateId, id));
       const [row] = await tx.delete(candidates).where(eq(candidates.id, id)).returning();
       if (!row) throw notFound('Candidate');
       await writeAudit(tx, u.id, 'candidate', id, 'delete', createdChanges(row));
@@ -255,9 +308,14 @@ export async function candidateRoutes(app: FastifyInstance) {
   app.post<{ Params: { id: string } }>('/api/candidates/:id/notes', async (req) => {
     const u = me(req);
     const id = Number(req.params.id);
-    const body = noteSchema.extend({ applicationId: z.coerce.number().int().optional().nullable() }).parse(req.body);
+    const body = noteSchema
+      .extend({ applicationId: z.coerce.number().int().optional().nullable() })
+      .parse(req.body);
     return app.db.transaction(async (tx) => {
-      const [c] = await tx.select({ name: candidates.name }).from(candidates).where(eq(candidates.id, id));
+      const [c] = await tx
+        .select({ name: candidates.name })
+        .from(candidates)
+        .where(eq(candidates.id, id));
       if (!c) throw notFound('Candidate');
       let appRow: { requirementId: number } | undefined;
       if (body.applicationId) {
@@ -269,7 +327,12 @@ export async function candidateRoutes(app: FastifyInstance) {
       }
       const [row] = await tx
         .insert(candidateNotes)
-        .values({ candidateId: id, applicationId: body.applicationId ?? null, body: body.body, authorId: u.id })
+        .values({
+          candidateId: id,
+          applicationId: body.applicationId ?? null,
+          body: body.body,
+          authorId: u.id,
+        })
         .returning();
       await logActivity(tx, {
         actorId: u.id,
@@ -294,7 +357,10 @@ export async function candidateRoutes(app: FastifyInstance) {
 
   app.get<{ Params: { id: string } }>('/api/resumes/:id/url', async (req) => {
     me(req);
-    const [r] = await app.db.select().from(resumes).where(eq(resumes.id, Number(req.params.id)));
+    const [r] = await app.db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.id, Number(req.params.id)));
     if (!r) throw notFound('Resume');
     return { url: await app.storage.signedUrl(r.storageKey, r.fileName) };
   });
@@ -303,7 +369,11 @@ export async function candidateRoutes(app: FastifyInstance) {
 export async function insertCandidate(
   tx: Tx,
   actorId: number | null,
-  body: CandidateInput & { sourcedBy?: number | null; referredBy?: number | null; importJobId?: number },
+  body: CandidateInput & {
+    sourcedBy?: number | null;
+    referredBy?: number | null;
+    importJobId?: number;
+  },
   activitySummary?: string,
 ) {
   const [row] = await tx
@@ -336,7 +406,10 @@ export async function saveResume(
   await app.storage.put(key, buf, type);
   try {
     return await app.db.transaction(async (tx) => {
-      const [c] = await tx.select({ name: candidates.name }).from(candidates).where(eq(candidates.id, candidateId));
+      const [c] = await tx
+        .select({ name: candidates.name })
+        .from(candidates)
+        .where(eq(candidates.id, candidateId));
       if (!c) throw notFound('Candidate');
       const [{ next }] = await tx
         .select({ next: sql<number>`coalesce(max(${resumes.versionNo}), 0)::int + 1` })
@@ -344,11 +417,27 @@ export async function saveResume(
         .where(eq(resumes.candidateId, candidateId));
       const [row] = await tx
         .insert(resumes)
-        .values({ candidateId, storageKey: key, fileName, mimeType: type, sizeBytes: buf.length, versionNo: next, uploadedBy: actorId })
+        .values({
+          candidateId,
+          storageKey: key,
+          fileName,
+          mimeType: type,
+          sizeBytes: buf.length,
+          versionNo: next,
+          uploadedBy: actorId,
+        })
         .returning();
-      await tx.update(candidates).set({ updatedAt: new Date() }).where(eq(candidates.id, candidateId));
+      await tx
+        .update(candidates)
+        .set({ updatedAt: new Date() })
+        .where(eq(candidates.id, candidateId));
       await writeAudit(tx, actorId, 'resume', row.id, 'create', createdChanges(row));
-      await logActivity(tx, { actorId, verb: 'candidate.resume', summary: `Uploaded resume v${next} for ${c.name}`, candidateId });
+      await logActivity(tx, {
+        actorId,
+        verb: 'candidate.resume',
+        summary: `Uploaded resume v${next} for ${c.name}`,
+        candidateId,
+      });
       return row;
     });
   } catch (e) {

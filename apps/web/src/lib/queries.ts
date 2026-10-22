@@ -4,11 +4,19 @@ import { api } from './api';
 import type { Lookup, User } from './types';
 
 export function useUsers() {
-  return useQuery({ queryKey: ['users'], queryFn: () => api.get<User[]>('/users'), staleTime: 60_000 });
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: () => api.get<User[]>('/users'),
+    staleTime: 60_000,
+  });
 }
 
 export function useLookups() {
-  return useQuery({ queryKey: ['lookups'], queryFn: () => api.get<Lookup[]>('/lookups'), staleTime: 5 * 60_000 });
+  return useQuery({
+    queryKey: ['lookups'],
+    queryFn: () => api.get<Lookup[]>('/lookups'),
+    staleTime: 5 * 60_000,
+  });
 }
 
 export function useLookup(kind: LookupKind | undefined) {
@@ -17,7 +25,11 @@ export function useLookup(kind: LookupKind | undefined) {
 }
 
 export function useSettings() {
-  return useQuery({ queryKey: ['settings'], queryFn: () => api.get<Settings>('/settings'), staleTime: 5 * 60_000 });
+  return useQuery({
+    queryKey: ['settings'],
+    queryFn: () => api.get<Settings>('/settings'),
+    staleTime: 5 * 60_000,
+  });
 }
 
 export interface Counts {
@@ -27,5 +39,9 @@ export interface Counts {
   unreadNotifications: number;
 }
 export function useCounts() {
-  return useQuery({ queryKey: ['counts'], queryFn: () => api.get<Counts>('/tasks/counts'), refetchInterval: 60_000 });
+  return useQuery({
+    queryKey: ['counts'],
+    queryFn: () => api.get<Counts>('/tasks/counts'),
+    refetchInterval: 60_000,
+  });
 }

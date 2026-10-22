@@ -1,4 +1,7 @@
+test-results
+playwright-report
+apps/web/dist
+apps/api/dist
 pnpm-lock.yaml
 docs/design
-dist
 apps/api/drizzle

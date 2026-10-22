@@ -1,15 +1,22 @@
 export { formatInr, formatInrShort, formatLpa } from '@crm/shared';
 
-const dateFmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+const dateFmt = new Intl.DateTimeFormat('en-IN', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
 const shortFmt = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });
 const timeFmt = new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit' });
 
-const toDate = (v: string | Date) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T00:00:00`) : new Date(v));
+const toDate = (v: string | Date) =>
+  typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Date(`${v}T00:00:00`) : new Date(v);
 
 export const fmtDate = (v?: string | Date | null) => (v ? dateFmt.format(toDate(v)) : '—');
 export const fmtShort = (v?: string | Date | null) => (v ? shortFmt.format(toDate(v)) : '—');
-export const fmtTime = (v?: string | Date | null) => (v ? timeFmt.format(toDate(v)).toLowerCase() : '');
-export const fmtDateTime = (v?: string | Date | null) => (v ? `${fmtShort(v)}, ${fmtTime(v)}` : '—');
+export const fmtTime = (v?: string | Date | null) =>
+  v ? timeFmt.format(toDate(v)).toLowerCase() : '';
+export const fmtDateTime = (v?: string | Date | null) =>
+  v ? `${fmtShort(v)}, ${fmtTime(v)}` : '—';
 
 /** "2h ago", "Yesterday", "5d ago", or a date. */
 export function ago(v?: string | Date | null) {
@@ -54,5 +61,6 @@ export const dateTimeInput = (v?: string | Date | null) => {
 };
 
 /** Rupees per annum <-> lakhs for form inputs. */
-export const toLakhs = (n?: number | null) => (n == null ? '' : String(Math.round((n / 1e5) * 100) / 100));
+export const toLakhs = (n?: number | null) =>
+  n == null ? '' : String(Math.round((n / 1e5) * 100) / 100);
 export const fromLakhs = (s: string) => (s.trim() === '' ? null : Math.round(parseFloat(s) * 1e5));

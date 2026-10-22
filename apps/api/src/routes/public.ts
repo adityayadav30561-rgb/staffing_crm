@@ -18,14 +18,21 @@ export async function publicRoutes(app: FastifyInstance) {
     const buf = await app.storage.get(v.key);
     const ext = v.key.split('.').pop();
     const type =
-      ext === 'pdf' ? 'application/pdf'
-      : ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      : ext === 'doc' ? 'application/msword'
-      : ext === 'rtf' ? 'application/rtf'
-      : 'text/plain; charset=utf-8';
+      ext === 'pdf'
+        ? 'application/pdf'
+        : ext === 'docx'
+          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          : ext === 'doc'
+            ? 'application/msword'
+            : ext === 'rtf'
+              ? 'application/rtf'
+              : 'text/plain; charset=utf-8';
     return reply
       .header('Content-Type', type)
-      .header('Content-Disposition', `${ext === 'pdf' ? 'inline' : 'attachment'}; filename="${v.name.replace(/[^\w.\- ]/g, '_')}"`)
+      .header(
+        'Content-Disposition',
+        `${ext === 'pdf' ? 'inline' : 'attachment'}; filename="${v.name.replace(/[^\w.\- ]/g, '_')}"`,
+      )
       .header('Cache-Control', 'private, no-store')
       .header('X-Content-Type-Options', 'nosniff')
       .send(buf);
@@ -60,7 +67,12 @@ export async function publicRoutes(app: FastifyInstance) {
         }
       }
       const body = referralSchema.parse(fields);
-      const dupes = await findDuplicates(app.db, { phone: body.phone, email: body.email, name: body.name, currentCompany: body.currentCompany });
+      const dupes = await findDuplicates(app.db, {
+        phone: body.phone,
+        email: body.email,
+        name: body.name,
+        currentCompany: body.currentCompany,
+      });
       const source = `Referral – ${referrer.name}`;
       const cand = await app.db.transaction(async (tx) => {
         const c = await insertCandidate(
@@ -99,7 +111,9 @@ export async function publicRoutes(app: FastifyInstance) {
       });
       if (file && file.buf.length) {
         await saveResume(app, null, cand.id, file.name, file.type, file.buf).catch(() => {
-          throw badRequest('Thanks! The details were saved, but the resume must be a PDF or Word file.');
+          throw badRequest(
+            'Thanks! The details were saved, but the resume must be a PDF or Word file.',
+          );
         });
       }
       return { ok: true };
@@ -115,26 +129,43 @@ export async function publicRoutes(app: FastifyInstance) {
     const digits = q.replace(/\D/g, '');
     const [c, r, cl] = await Promise.all([
       app.db
-        .select({ id: candidates.id, name: candidates.name, currentCompany: candidates.currentCompany, phone: candidates.phone })
+        .select({
+          id: candidates.id,
+          name: candidates.name,
+          currentCompany: candidates.currentCompany,
+          phone: candidates.phone,
+        })
         .from(candidates)
         .where(
           or(
             ilike(candidates.name, like),
             ilike(candidates.email, like),
             ilike(candidates.currentCompany, like),
-            digits.length >= 4 ? sql`${candidates.phoneE164} like ${'%' + digits + '%'}` : undefined,
+            digits.length >= 4
+              ? sql`${candidates.phoneE164} like ${'%' + digits + '%'}`
+              : undefined,
           ),
         )
         .orderBy(desc(sql`similarity(${candidates.name}, ${q})`))
         .limit(8),
       app.db
-        .select({ id: requirements.id, code: requirements.code, title: requirements.title, status: requirements.status, clientName: clients.name })
+        .select({
+          id: requirements.id,
+          code: requirements.code,
+          title: requirements.title,
+          status: requirements.status,
+          clientName: clients.name,
+        })
         .from(requirements)
         .innerJoin(clients, eq(clients.id, requirements.clientId))
         .where(or(ilike(requirements.title, like), ilike(requirements.code, like)))
         .orderBy(desc(requirements.createdAt))
         .limit(5),
-      app.db.select({ id: clients.id, name: clients.name, city: clients.city }).from(clients).where(ilike(clients.name, like)).limit(5),
+      app.db
+        .select({ id: clients.id, name: clients.name, city: clients.city })
+        .from(clients)
+        .where(ilike(clients.name, like))
+        .limit(5),
     ]);
     return { candidates: c, requirements: r, clients: cl };
   });

@@ -9,7 +9,10 @@ import { getSettings, saveSettings } from '../lib/settings';
 
 export async function adminRoutes(app: FastifyInstance) {
   app.get('/api/lookups', async () => {
-    return app.db.select().from(lookups).orderBy(asc(lookups.kind), asc(lookups.sort), asc(lookups.label));
+    return app.db
+      .select()
+      .from(lookups)
+      .orderBy(asc(lookups.kind), asc(lookups.sort), asc(lookups.label));
   });
 
   app.post('/api/lookups', async (req) => {
@@ -54,63 +57,61 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   /** Business activity feed (managers). */
-  app.get<{ Querystring: { userId?: string; verb?: string; from?: string; to?: string; before?: string } }>(
-    '/api/activities',
-    async (req) => {
-      requireRole(req, 'manager');
-      const q = req.query;
-      const conds: SQL[] = [];
-      if (q.userId) conds.push(eq(activities.actorId, Number(q.userId)));
-      if (q.verb) conds.push(eq(activities.verb, q.verb));
-      if (q.from) conds.push(gte(activities.createdAt, new Date(q.from)));
-      if (q.to) conds.push(lte(activities.createdAt, new Date(q.to)));
-      if (q.before) conds.push(lte(activities.id, Number(q.before)));
-      return app.db
-        .select({
-          id: activities.id,
-          verb: activities.verb,
-          summary: activities.summary,
-          createdAt: activities.createdAt,
-          actorName: users.name,
-          candidateId: activities.candidateId,
-          requirementId: activities.requirementId,
-          applicationId: activities.applicationId,
-          clientId: activities.clientId,
-        })
-        .from(activities)
-        .leftJoin(users, eq(users.id, activities.actorId))
-        .where(conds.length ? and(...conds) : undefined)
-        .orderBy(desc(activities.id))
-        .limit(100);
-    },
-  );
+  app.get<{
+    Querystring: { userId?: string; verb?: string; from?: string; to?: string; before?: string };
+  }>('/api/activities', async (req) => {
+    requireRole(req, 'manager');
+    const q = req.query;
+    const conds: SQL[] = [];
+    if (q.userId) conds.push(eq(activities.actorId, Number(q.userId)));
+    if (q.verb) conds.push(eq(activities.verb, q.verb));
+    if (q.from) conds.push(gte(activities.createdAt, new Date(q.from)));
+    if (q.to) conds.push(lte(activities.createdAt, new Date(q.to)));
+    if (q.before) conds.push(lte(activities.id, Number(q.before)));
+    return app.db
+      .select({
+        id: activities.id,
+        verb: activities.verb,
+        summary: activities.summary,
+        createdAt: activities.createdAt,
+        actorName: users.name,
+        candidateId: activities.candidateId,
+        requirementId: activities.requirementId,
+        applicationId: activities.applicationId,
+        clientId: activities.clientId,
+      })
+      .from(activities)
+      .leftJoin(users, eq(users.id, activities.actorId))
+      .where(conds.length ? and(...conds) : undefined)
+      .orderBy(desc(activities.id))
+      .limit(100);
+  });
 
   /** Field-level audit history (managers). */
-  app.get<{ Querystring: { entity?: string; entityId?: string; userId?: string; before?: string } }>(
-    '/api/audit',
-    async (req) => {
-      requireRole(req, 'manager');
-      const q = req.query;
-      const conds: SQL[] = [];
-      if (q.entity) conds.push(eq(auditLogs.entity, q.entity));
-      if (q.entityId) conds.push(eq(auditLogs.entityId, Number(q.entityId)));
-      if (q.userId) conds.push(eq(auditLogs.actorId, Number(q.userId)));
-      if (q.before) conds.push(lte(auditLogs.id, Number(q.before)));
-      return app.db
-        .select({
-          id: auditLogs.id,
-          entity: auditLogs.entity,
-          entityId: auditLogs.entityId,
-          action: auditLogs.action,
-          changes: auditLogs.changes,
-          createdAt: auditLogs.createdAt,
-          actorName: users.name,
-        })
-        .from(auditLogs)
-        .leftJoin(users, eq(users.id, auditLogs.actorId))
-        .where(conds.length ? and(...conds) : undefined)
-        .orderBy(desc(auditLogs.id))
-        .limit(100);
-    },
-  );
+  app.get<{
+    Querystring: { entity?: string; entityId?: string; userId?: string; before?: string };
+  }>('/api/audit', async (req) => {
+    requireRole(req, 'manager');
+    const q = req.query;
+    const conds: SQL[] = [];
+    if (q.entity) conds.push(eq(auditLogs.entity, q.entity));
+    if (q.entityId) conds.push(eq(auditLogs.entityId, Number(q.entityId)));
+    if (q.userId) conds.push(eq(auditLogs.actorId, Number(q.userId)));
+    if (q.before) conds.push(lte(auditLogs.id, Number(q.before)));
+    return app.db
+      .select({
+        id: auditLogs.id,
+        entity: auditLogs.entity,
+        entityId: auditLogs.entityId,
+        action: auditLogs.action,
+        changes: auditLogs.changes,
+        createdAt: auditLogs.createdAt,
+        actorName: users.name,
+      })
+      .from(auditLogs)
+      .leftJoin(users, eq(users.id, auditLogs.actorId))
+      .where(conds.length ? and(...conds) : undefined)
+      .orderBy(desc(auditLogs.id))
+      .limit(100);
+  });
 }

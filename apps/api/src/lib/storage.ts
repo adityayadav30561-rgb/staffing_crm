@@ -1,7 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { GetObjectCommand, PutObjectCommand, DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { Config } from '../config';
 import { randomToken } from './auth';
@@ -22,7 +27,8 @@ export function sniffDocType(buf: Buffer, declared: string): string | null {
   if (head[0] === 0x50 && head[1] === 0x4b) {
     return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   }
-  if (head.equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))) return 'application/msword';
+  if (head.equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])))
+    return 'application/msword';
   if (head.subarray(0, 5).toString('latin1') === '{\\rtf') return 'application/rtf';
   if (declared === 'text/plain' && !buf.subarray(0, 512).includes(0)) return 'text/plain';
   return null;
@@ -69,7 +75,9 @@ function localStorage(cfg: Config): Storage {
 
 /** Token = base64url(json{k,n,e}).hmac — verified by GET /api/files/:token. */
 export function signLocal(secret: string, key: string, name: string, ttl: number) {
-  const payload = Buffer.from(JSON.stringify({ k: key, n: name, e: Date.now() + ttl * 1000 })).toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({ k: key, n: name, e: Date.now() + ttl * 1000 }),
+  ).toString('base64url');
   const sig = createHmac('sha256', secret).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
@@ -80,7 +88,11 @@ export function verifyLocal(secret: string, token: string): { key: string; name:
   const expected = createHmac('sha256', secret).update(payload).digest();
   const given = Buffer.from(sig, 'base64url');
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
-  const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { k: string; n: string; e: number };
+  const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as {
+    k: string;
+    n: string;
+    e: number;
+  };
   if (data.e < Date.now()) return null;
   return { key: data.k, name: data.n };
 }
@@ -99,7 +111,9 @@ function s3Storage(cfg: Config): Storage {
   const Bucket = s.s3Bucket;
   return {
     async put(key, body, contentType) {
-      await client.send(new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType }));
+      await client.send(
+        new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType }),
+      );
     },
     async get(key) {
       const res = await client.send(new GetObjectCommand({ Bucket, Key: key }));

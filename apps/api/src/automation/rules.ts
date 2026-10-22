@@ -23,6 +23,7 @@ import {
   tasks,
 } from '../db/schema';
 import { getSettings } from '../lib/settings';
+import { outer } from '../lib/sql';
 
 export interface RunResult {
   created: number;
@@ -35,7 +36,11 @@ export async function runRules(db: DB, now = new Date()): Promise<RunResult> {
   const s = await getSettings(db);
   const result: RunResult = { created: 0, closed: 0 };
   const create = async (t: NewTask) => {
-    const rows = await db.insert(tasks).values(t).onConflictDoNothing({ target: tasks.autoKey }).returning({ id: tasks.id });
+    const rows = await db
+      .insert(tasks)
+      .values(t)
+      .onConflictDoNothing({ target: tasks.autoKey })
+      .returning({ id: tasks.id });
     result.created += rows.length;
   };
 
@@ -69,11 +74,21 @@ async function feedbackRules(db: DB, s: Settings, now: Date, create: Create) {
     .innerJoin(candidates, eq(candidates.id, applications.candidateId))
     .innerJoin(requirements, eq(requirements.id, applications.requirementId))
     .innerJoin(clients, eq(clients.id, requirements.clientId))
-    .where(and(eq(applications.status, 'feedback_pending'), isNotNull(applications.submittedAt), isNull(applications.closedAt)));
+    .where(
+      and(
+        eq(applications.status, 'feedback_pending'),
+        isNotNull(applications.submittedAt),
+        isNull(applications.closedAt),
+      ),
+    );
 
   for (const r of rows) {
     const submitted = r.submittedAt!;
-    const base = { candidateId: r.candidateId, requirementId: r.requirementId, applicationId: r.id };
+    const base = {
+      candidateId: r.candidateId,
+      requirementId: r.requirementId,
+      applicationId: r.id,
+    };
     const chaseDue = addWorkingDays(submitted, r.chaseDays, s.offDays);
     if (s.rules.chase_feedback && chaseDue <= now) {
       await create({
@@ -164,12 +179,23 @@ async function noticeRules(db: DB, s: Settings, now: Date, create: Create) {
     .innerJoin(candidates, eq(candidates.id, applications.candidateId))
     .innerJoin(requirements, eq(requirements.id, applications.requirementId))
     .innerJoin(clients, eq(clients.id, requirements.clientId))
-    .where(and(inArray(applications.status, [...NOTICE_STATUSES]), isNull(applications.closedAt), isNotNull(offers.expectedDoj)));
+    .where(
+      and(
+        inArray(applications.status, [...NOTICE_STATUSES]),
+        isNull(applications.closedAt),
+        isNotNull(offers.expectedDoj),
+      ),
+    );
 
   for (const r of rows) {
     const doj = r.expectedDoj!;
     const assigneeId = r.submittedBy ?? r.addedBy ?? r.ownerId;
-    const base = { candidateId: r.candidateId, requirementId: r.requirementId, applicationId: r.id, assigneeId };
+    const base = {
+      candidateId: r.candidateId,
+      requirementId: r.requirementId,
+      applicationId: r.id,
+      assigneeId,
+    };
     const daysLeft = daysBetween(now, new Date(`${doj}T00:00:00`));
 
     if (s.rules.confirm_joining && daysLeft <= 0) {
@@ -221,7 +247,13 @@ async function guaranteeRule(db: DB, s: Settings, now: Date, create: Create) {
     .innerJoin(candidates, eq(candidates.id, applications.candidateId))
     .innerJoin(requirements, eq(requirements.id, applications.requirementId))
     .innerJoin(clients, eq(clients.id, requirements.clientId))
-    .where(and(isNull(placements.leftOn), lte(placements.guaranteeUntil, horizon), sql`${placements.guaranteeUntil} >= ${isoDate(now)}`));
+    .where(
+      and(
+        isNull(placements.leftOn),
+        lte(placements.guaranteeUntil, horizon),
+        sql`${placements.guaranteeUntil} >= ${isoDate(now)}`,
+      ),
+    );
   for (const r of rows) {
     await create({
       rule: 'guarantee_expiry',
@@ -251,19 +283,19 @@ async function closeClearedTasks(db: DB, _s: Settings, now: Date): Promise<numbe
   };
   await run(
     ['chase_feedback', 'escalate_feedback'],
-    sql`not exists (select 1 from ${applications} a where a.id = ${tasks.applicationId} and a.status = 'feedback_pending' and a.closed_at is null)`,
+    sql`not exists (select 1 from ${applications} a where a.id = ${outer('tasks', 'application_id')} and a.status = 'feedback_pending' and a.closed_at is null)`,
   );
   await run(
     ['interview_outcome'],
-    sql`not exists (select 1 from ${interviews} i where i.id = ${tasks.interviewId} and i.status in ('scheduled','rescheduled','pending') and ${tasks.autoKey} = 'interview_outcome:' || i.id || ':' || (extract(epoch from i.scheduled_at) * 1000)::bigint)`,
+    sql`not exists (select 1 from ${interviews} i where i.id = ${outer('tasks', 'interview_id')} and i.status in ('scheduled','rescheduled','pending') and ${outer('tasks', 'auto_key')} = 'interview_outcome:' || i.id || ':' || (extract(epoch from i.scheduled_at) * 1000)::bigint)`,
   );
   await run(
     ['notice_checkin', 'confirm_joining'],
-    sql`not exists (select 1 from ${applications} a where a.id = ${tasks.applicationId} and a.status in ('offer_accepted','awaiting_doj','joining_deferred') and a.closed_at is null)`,
+    sql`not exists (select 1 from ${applications} a where a.id = ${outer('tasks', 'application_id')} and a.status in ('offer_accepted','awaiting_doj','joining_deferred') and a.closed_at is null)`,
   );
   await run(
     ['guarantee_expiry'],
-    sql`exists (select 1 from ${placements} p where p.id = ${tasks.placementId} and p.left_on is not null)`,
+    sql`exists (select 1 from ${placements} p where p.id = ${outer('tasks', 'placement_id')} and p.left_on is not null)`,
   );
   return n;
 }

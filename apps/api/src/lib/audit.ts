@@ -21,7 +21,8 @@ function sameValue(a: unknown, b: unknown) {
   if (a instanceof Date || b instanceof Date) {
     return new Date(a as string).getTime() === new Date(b as string).getTime();
   }
-  if (typeof a === 'object' || typeof b === 'object') return JSON.stringify(a) === JSON.stringify(b);
+  if (typeof a === 'object' || typeof b === 'object')
+    return JSON.stringify(a) === JSON.stringify(b);
   // numeric columns may come back as numbers while input is a string, or vice versa
   if (a != null && b != null && String(a) === String(b)) return true;
   return a === b;
@@ -41,7 +42,10 @@ export async function writeAudit(
 
 /** Audit for a newly created row: every non-empty field as [null, value]. */
 export function createdChanges(row: Record<string, unknown>) {
-  return diff(null, Object.fromEntries(Object.entries(row).filter(([, v]) => v != null && v !== '')));
+  return diff(
+    null,
+    Object.fromEntries(Object.entries(row).filter(([, v]) => v != null && v !== '')),
+  );
 }
 
 export interface ActivityInput {

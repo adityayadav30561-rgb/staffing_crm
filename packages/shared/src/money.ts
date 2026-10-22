@@ -1,7 +1,11 @@
 import type { FeeType } from './enums';
 
 /** Placement fee in rupees: a percentage of the annual offered CTC, or a fixed amount. */
-export function calculateFee(feeType: FeeType, feeValue: number, offeredCtc: number | null): number {
+export function calculateFee(
+  feeType: FeeType,
+  feeValue: number,
+  offeredCtc: number | null,
+): number {
   if (feeType === 'fixed') return Math.round(feeValue);
   if (!offeredCtc) return 0;
   return Math.round((offeredCtc * feeValue) / 100);

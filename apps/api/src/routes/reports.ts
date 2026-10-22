@@ -1,6 +1,14 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { sql } from 'drizzle-orm';
-import { isManager, isoDate, REQUIREMENT_STATUS_LABELS, STAGES, STATUS_LABELS, type AppStatus, type RequirementStatus } from '@crm/shared';
+import {
+  isManager,
+  isoDate,
+  REQUIREMENT_STATUS_LABELS,
+  STAGES,
+  STATUS_LABELS,
+  type AppStatus,
+  type RequirementStatus,
+} from '@crm/shared';
 import { me } from '../app';
 import { badRequest } from '../lib/errors';
 import { sendXlsx, toXlsx, type Column } from '../lib/xlsx';
@@ -16,8 +24,11 @@ interface RangeQuery {
 
 function range(q: RangeQuery) {
   const to = q.to ? new Date(`${q.to}T23:59:59.999`) : new Date();
-  const from = q.from ? new Date(`${q.from}T00:00:00`) : new Date(to.getFullYear(), to.getMonth(), 1);
-  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) throw badRequest('Invalid date range');
+  const from = q.from
+    ? new Date(`${q.from}T00:00:00`)
+    : new Date(to.getFullYear(), to.getMonth(), 1);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()))
+    throw badRequest('Invalid date range');
   return { from, to };
 }
 
@@ -25,7 +36,13 @@ const rows = <T>(r: unknown) => r as T[];
 /** Raw SQL templates bind Dates as ISO strings (drizzle + postgres-js can't serialise Date there). */
 const iso = (d: Date) => d.toISOString();
 
-async function maybeXlsx<T>(reply: FastifyReply, q: RangeQuery, name: string, columns: Column<T>[], data: T[]) {
+async function maybeXlsx<T>(
+  reply: FastifyReply,
+  q: RangeQuery,
+  name: string,
+  columns: Column<T>[],
+  data: T[],
+) {
   if (q.format !== 'xlsx') return data;
   return sendXlsx(reply, `${name}.xlsx`, await toXlsx(name, columns, data));
 }
@@ -40,7 +57,9 @@ export async function reportRoutes(app: FastifyInstance) {
     // "Mine" = requirements I own or am assigned to.
     const myReq = (alias: string) =>
       mine
-        ? sql.raw(`and (${alias}.owner_id = ${u.id} or exists (select 1 from requirement_assignees ra where ra.requirement_id = ${alias}.id and ra.user_id = ${u.id}))`)
+        ? sql.raw(
+            `and (${alias}.owner_id = ${u.id} or exists (select 1 from requirement_assignees ra where ra.requirement_id = ${alias}.id and ra.user_id = ${u.id}))`,
+          )
         : sql``;
     const now = new Date();
     const weekStart = new Date(now);
@@ -151,14 +170,28 @@ export async function reportRoutes(app: FastifyInstance) {
       `),
     );
 
-    return { scope, kpi, spark, awaitingFeedback, upcomingInterviews, joinings, readyToClose, team, recent };
+    return {
+      scope,
+      kpi,
+      spark,
+      awaitingFeedback,
+      upcomingInterviews,
+      joinings,
+      readyToClose,
+      team,
+      recent,
+    };
   });
 
   /** Recruiter productivity: replaces the daily Excel tracker. */
   app.get<{ Querystring: RangeQuery }>('/api/reports/productivity', async (req, reply) => {
     const u = me(req);
     const { from, to } = range(req.query);
-    const only = !isManager(u.role) ? u.id : req.query.recruiterId ? Number(req.query.recruiterId) : null;
+    const only = !isManager(u.role)
+      ? u.id
+      : req.query.recruiterId
+        ? Number(req.query.recruiterId)
+        : null;
     const data = rows<{
       id: number;
       name: string;
@@ -188,40 +221,48 @@ export async function reportRoutes(app: FastifyInstance) {
         order by "submitted" desc, u.name
       `),
     );
-    return maybeXlsx(reply, req.query, 'Recruiter productivity', [
-      { header: 'Recruiter', value: (r) => r.name, width: 22 },
-      { header: 'Candidates added', value: (r) => r.candidatesAdded },
-      { header: 'Screened', value: (r) => r.screened },
-      { header: 'Submitted', value: (r) => r.submitted },
-      { header: 'Client shortlisted', value: (r) => r.shortlisted },
-      { header: 'Interviews scheduled', value: (r) => r.interviews },
-      { header: 'Selected', value: (r) => r.selected },
-      { header: 'Joined', value: (r) => r.joined },
-    ], data);
+    return maybeXlsx(
+      reply,
+      req.query,
+      'Recruiter productivity',
+      [
+        { header: 'Recruiter', value: (r) => r.name, width: 22 },
+        { header: 'Candidates added', value: (r) => r.candidatesAdded },
+        { header: 'Screened', value: (r) => r.screened },
+        { header: 'Submitted', value: (r) => r.submitted },
+        { header: 'Client shortlisted', value: (r) => r.shortlisted },
+        { header: 'Interviews scheduled', value: (r) => r.interviews },
+        { header: 'Selected', value: (r) => r.selected },
+        { header: 'Joined', value: (r) => r.joined },
+      ],
+      data,
+    );
   });
 
   /** Requirement status: openings vs filled, funnel and age. */
-  app.get<{ Querystring: RangeQuery & { status?: string } }>('/api/reports/requirements', async (req, reply) => {
-    me(req);
-    const statuses = (req.query.status ?? 'open,on_hold').split(',') as RequirementStatus[];
-    const data = rows<{
-      id: number;
-      code: string;
-      title: string;
-      clientName: string;
-      ownerName: string;
-      status: RequirementStatus;
-      openings: number;
-      filled: number;
-      mapped: number;
-      submitted: number;
-      interviewed: number;
-      selected: number;
-      ageDays: number;
-      lastActivityAt: string | null;
-      stages: Record<string, number>;
-    }>(
-      await db.execute(sql`
+  app.get<{ Querystring: RangeQuery & { status?: string } }>(
+    '/api/reports/requirements',
+    async (req, reply) => {
+      me(req);
+      const statuses = (req.query.status ?? 'open,on_hold').split(',') as RequirementStatus[];
+      const data = rows<{
+        id: number;
+        code: string;
+        title: string;
+        clientName: string;
+        ownerName: string;
+        status: RequirementStatus;
+        openings: number;
+        filled: number;
+        mapped: number;
+        submitted: number;
+        interviewed: number;
+        selected: number;
+        ageDays: number;
+        lastActivityAt: string | null;
+        stages: Record<string, number>;
+      }>(
+        await db.execute(sql`
         select r.id, r.code, r.title, cl.name as "clientName", u.name as "ownerName", r.status, r.openings,
           (select count(*)::int from applications a where a.requirement_id = r.id and a.status = 'joined') as filled,
           (select count(*)::int from applications a where a.requirement_id = r.id) as mapped,
@@ -237,24 +278,37 @@ export async function reportRoutes(app: FastifyInstance) {
           ${req.query.clientId ? sql`and r.client_id = ${Number(req.query.clientId)}` : sql``}
         order by "ageDays" desc
       `),
-    );
-    return maybeXlsx(reply, req.query, 'Requirement status', [
-      { header: 'Code', value: (r) => r.code },
-      { header: 'Position', value: (r) => r.title, width: 26 },
-      { header: 'Client', value: (r) => r.clientName, width: 22 },
-      { header: 'Owner', value: (r) => r.ownerName, width: 18 },
-      { header: 'Status', value: (r) => REQUIREMENT_STATUS_LABELS[r.status] },
-      { header: 'Openings', value: (r) => r.openings },
-      { header: 'Filled', value: (r) => r.filled },
-      ...STAGES.map((s) => ({ header: `Active: ${s}`, value: (r: (typeof data)[number]) => r.stages[s] ?? 0 })),
-      { header: 'Total mapped', value: (r) => r.mapped },
-      { header: 'Submitted', value: (r) => r.submitted },
-      { header: 'Interviewed', value: (r) => r.interviewed },
-      { header: 'Selected', value: (r) => r.selected },
-      { header: 'Age (days)', value: (r) => r.ageDays },
-      { header: 'Last activity', value: (r) => (r.lastActivityAt ? new Date(r.lastActivityAt) : null) },
-    ], data);
-  });
+      );
+      return maybeXlsx(
+        reply,
+        req.query,
+        'Requirement status',
+        [
+          { header: 'Code', value: (r) => r.code },
+          { header: 'Position', value: (r) => r.title, width: 26 },
+          { header: 'Client', value: (r) => r.clientName, width: 22 },
+          { header: 'Owner', value: (r) => r.ownerName, width: 18 },
+          { header: 'Status', value: (r) => REQUIREMENT_STATUS_LABELS[r.status] },
+          { header: 'Openings', value: (r) => r.openings },
+          { header: 'Filled', value: (r) => r.filled },
+          ...STAGES.map((s) => ({
+            header: `Active: ${s}`,
+            value: (r: (typeof data)[number]) => r.stages[s] ?? 0,
+          })),
+          { header: 'Total mapped', value: (r) => r.mapped },
+          { header: 'Submitted', value: (r) => r.submitted },
+          { header: 'Interviewed', value: (r) => r.interviewed },
+          { header: 'Selected', value: (r) => r.selected },
+          { header: 'Age (days)', value: (r) => r.ageDays },
+          {
+            header: 'Last activity',
+            value: (r) => (r.lastActivityAt ? new Date(r.lastActivityAt) : null),
+          },
+        ],
+        data,
+      );
+    },
+  );
 
   /** Client report: how each client responds to our submissions. */
   app.get<{ Querystring: RangeQuery }>('/api/reports/clients', async (req, reply) => {
@@ -298,20 +352,30 @@ export async function reportRoutes(app: FastifyInstance) {
     const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : null);
     const withRatios = data
       .filter((r) => r.submitted || r.requirementsOpened || r.joined)
-      .map((r) => ({ ...r, shortlistPct: pct(r.shortlisted, r.submitted), interviewToSelectPct: pct(r.selected, r.interviewed) }));
-    return maybeXlsx(reply, req.query, 'Client report', [
-      { header: 'Client', value: (r) => r.name, width: 24 },
-      { header: 'Requirements opened', value: (r) => r.requirementsOpened },
-      { header: 'Profiles submitted', value: (r) => r.submitted },
-      { header: 'Shortlisted', value: (r) => r.shortlisted },
-      { header: 'Shortlist %', value: (r) => r.shortlistPct },
-      { header: 'Rejected', value: (r) => r.rejected },
-      { header: 'Interviewed', value: (r) => r.interviewed },
-      { header: 'Selected', value: (r) => r.selected },
-      { header: 'Interview→select %', value: (r) => r.interviewToSelectPct },
-      { header: 'Joined', value: (r) => r.joined },
-      { header: 'Avg feedback (days)', value: (r) => r.avgFeedbackDays },
-    ], withRatios);
+      .map((r) => ({
+        ...r,
+        shortlistPct: pct(r.shortlisted, r.submitted),
+        interviewToSelectPct: pct(r.selected, r.interviewed),
+      }));
+    return maybeXlsx(
+      reply,
+      req.query,
+      'Client report',
+      [
+        { header: 'Client', value: (r) => r.name, width: 24 },
+        { header: 'Requirements opened', value: (r) => r.requirementsOpened },
+        { header: 'Profiles submitted', value: (r) => r.submitted },
+        { header: 'Shortlisted', value: (r) => r.shortlisted },
+        { header: 'Shortlist %', value: (r) => r.shortlistPct },
+        { header: 'Rejected', value: (r) => r.rejected },
+        { header: 'Interviewed', value: (r) => r.interviewed },
+        { header: 'Selected', value: (r) => r.selected },
+        { header: 'Interview→select %', value: (r) => r.interviewToSelectPct },
+        { header: 'Joined', value: (r) => r.joined },
+        { header: 'Avg feedback (days)', value: (r) => r.avgFeedbackDays },
+      ],
+      withRatios,
+    );
   });
 
   /** Drop-off reasons: where and why candidates fall out. */
@@ -330,11 +394,17 @@ export async function reportRoutes(app: FastifyInstance) {
         order by n desc
       `),
     );
-    return maybeXlsx(reply, req.query, 'Drop-off reasons', [
-      { header: 'Stage', value: (r) => r.stage },
-      { header: 'Outcome', value: (r) => STATUS_LABELS[r.status] },
-      { header: 'Reason', value: (r) => r.reason ?? '—', width: 30 },
-      { header: 'Candidates', value: (r) => r.n },
-    ], data);
+    return maybeXlsx(
+      reply,
+      req.query,
+      'Drop-off reasons',
+      [
+        { header: 'Stage', value: (r) => r.stage },
+        { header: 'Outcome', value: (r) => STATUS_LABELS[r.status] },
+        { header: 'Reason', value: (r) => r.reason ?? '—', width: 30 },
+        { header: 'Candidates', value: (r) => r.n },
+      ],
+      data,
+    );
   });
 }

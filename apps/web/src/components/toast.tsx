@@ -14,12 +14,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const push = useCallback((message: string, tone: 'ok' | 'error' = 'ok') => {
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, message, tone }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), tone === 'error' ? 7000 : 3500);
+    setTimeout(
+      () => setToasts((t) => t.filter((x) => x.id !== id)),
+      tone === 'error' ? 7000 : 3500,
+    );
   }, []);
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed bottom-16 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-8" aria-live="polite">
+      <div
+        className="pointer-events-none fixed bottom-16 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-8"
+        aria-live="polite"
+      >
         {toasts.map((t) => (
           <div
             key={t.id}
@@ -28,7 +34,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               t.tone === 'ok' ? 'bg-forest text-mint' : 'bg-surface text-signal-red',
             )}
           >
-            {t.tone === 'ok' ? <CheckCircle2 className="size-14 shrink-0" strokeWidth={1.8} /> : <AlertCircle className="size-14 shrink-0" strokeWidth={1.8} />}
+            {t.tone === 'ok' ? (
+              <CheckCircle2 className="size-14 shrink-0" strokeWidth={1.8} />
+            ) : (
+              <AlertCircle className="size-14 shrink-0" strokeWidth={1.8} />
+            )}
             {t.message}
           </div>
         ))}

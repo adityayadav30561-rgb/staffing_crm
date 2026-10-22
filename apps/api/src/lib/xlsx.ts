@@ -7,11 +7,18 @@ export interface Column<T> {
   width?: number;
 }
 
-export async function toXlsx<T>(sheetName: string, columns: Column<T>[], rows: T[]): Promise<Buffer> {
+export async function toXlsx<T>(
+  sheetName: string,
+  columns: Column<T>[],
+  rows: T[],
+): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Recruitment CRM';
   const ws = wb.addWorksheet(sheetName.slice(0, 31));
-  ws.columns = columns.map((c) => ({ header: c.header, width: c.width ?? Math.max(12, c.header.length + 2) }));
+  ws.columns = columns.map((c) => ({
+    header: c.header,
+    width: c.width ?? Math.max(12, c.header.length + 2),
+  }));
   ws.getRow(1).font = { bold: true };
   ws.views = [{ state: 'frozen', ySplit: 1 }];
   for (const r of rows) ws.addRow(columns.map((c) => c.value(r) ?? null));

@@ -4,7 +4,14 @@ import { changePasswordSchema, loginSchema } from '@crm/shared';
 import { sessions, users } from '../db/schema';
 import { me } from '../app';
 import { badRequest, unauthorized } from '../lib/errors';
-import { hashPassword, randomToken, SESSION_COOKIE, SESSION_TTL_MS, sha256, verifyPassword } from '../lib/auth';
+import {
+  hashPassword,
+  randomToken,
+  SESSION_COOKIE,
+  SESSION_TTL_MS,
+  sha256,
+  verifyPassword,
+} from '../lib/auth';
 import { writeAudit } from '../lib/audit';
 
 export async function authRoutes(app: FastifyInstance) {
@@ -65,7 +72,9 @@ export async function authRoutes(app: FastifyInstance) {
       .set({ passwordHash: await hashPassword(body.newPassword), updatedAt: new Date() })
       .where(eq(users.id, u.id));
     // Sign out other devices.
-    await app.db.delete(sessions).where(and(eq(sessions.userId, u.id), ne(sessions.id, u.sessionId)));
+    await app.db
+      .delete(sessions)
+      .where(and(eq(sessions.userId, u.id), ne(sessions.id, u.sessionId)));
     await writeAudit(app.db, u.id, 'user', u.id, 'update', { password: ['***', '***'] });
     return { ok: true };
   });

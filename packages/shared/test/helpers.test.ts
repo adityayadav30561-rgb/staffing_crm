@@ -47,7 +47,9 @@ describe('parsers', () => {
     expect(splitSkills('React, node; react |AWS')).toEqual(['React', 'node', 'AWS']);
   });
   it('suggests column mapping from headers', () => {
-    expect(suggestMapping(['Candidate Name', 'Mobile No', 'Email ID', 'CTC', 'Notice Period'])).toEqual({
+    expect(
+      suggestMapping(['Candidate Name', 'Mobile No', 'Email ID', 'CTC', 'Notice Period']),
+    ).toEqual({
       name: 'Candidate Name',
       phone: 'Mobile No',
       email: 'Email ID',

@@ -15,7 +15,11 @@ export async function userRoutes(app: FastifyInstance) {
     const rows = await app.db.select().from(users).orderBy(asc(users.name));
     return rows
       .filter((r) => r.active || u.role === 'admin')
-      .map((r) => (u.role === 'admin' ? publicUser(r) : { id: r.id, name: r.name, role: r.role, active: r.active }));
+      .map((r) =>
+        u.role === 'admin'
+          ? publicUser(r)
+          : { id: r.id, name: r.name, role: r.role, active: r.active },
+      );
   });
 
   app.post('/api/users', async (req) => {
@@ -58,7 +62,11 @@ export async function userRoutes(app: FastifyInstance) {
     if (body.active === false || body.password) {
       await app.db.delete(sessions).where(eq(sessions.userId, id));
     }
-    const changes = diff(publicUser(before), { name: body.name, role: body.role, active: body.active });
+    const changes = diff(publicUser(before), {
+      name: body.name,
+      role: body.role,
+      active: body.active,
+    });
     if (body.password) changes.password = ['***', '***'];
     await writeAudit(app.db, admin.id, 'user', id, 'update', changes);
     return publicUser(row);

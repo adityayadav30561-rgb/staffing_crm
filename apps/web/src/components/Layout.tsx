@@ -54,7 +54,11 @@ export function Layout() {
             <Item to="/" icon={<LayoutDashboard className={ic} strokeWidth={S} />} end>
               Dashboard
             </Item>
-            <Item to="/tasks" icon={<CheckSquare className={ic} strokeWidth={S} />} count={counts?.dueToday}>
+            <Item
+              to="/tasks"
+              icon={<CheckSquare className={ic} strokeWidth={S} />}
+              count={counts?.dueToday}
+            >
               My tasks
             </Item>
             <Item to="/calendar" icon={<CalendarCheck className={ic} strokeWidth={S} />}>
@@ -118,13 +122,27 @@ export function Layout() {
 function NavGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <p className="mb-4 px-12 text-9 font-medium uppercase tracking-[0.08em] text-ink-3">{label}</p>
+      <p className="mb-4 px-12 text-9 font-medium uppercase tracking-[0.08em] text-ink-3">
+        {label}
+      </p>
       <div className="space-y-2">{children}</div>
     </div>
   );
 }
 
-function Item({ to, icon, children, count, end }: { to: string; icon: ReactNode; children: ReactNode; count?: number; end?: boolean }) {
+function Item({
+  to,
+  icon,
+  children,
+  count,
+  end,
+}: {
+  to: string;
+  icon: ReactNode;
+  children: ReactNode;
+  count?: number;
+  end?: boolean;
+}) {
   return (
     <NavLink
       to={to}
@@ -132,7 +150,9 @@ function Item({ to, icon, children, count, end }: { to: string; icon: ReactNode;
       className={({ isActive }) =>
         clsx(
           'flex items-center gap-10 rounded-full px-12 py-7 transition',
-          isActive ? 'bg-forest font-medium text-mint' : 'text-ink-2 hover:bg-paper-2 hover:text-ink',
+          isActive
+            ? 'bg-forest font-medium text-mint'
+            : 'text-ink-2 hover:bg-paper-2 hover:text-ink',
         )
       }
     >
@@ -141,7 +161,14 @@ function Item({ to, icon, children, count, end }: { to: string; icon: ReactNode;
           {icon}
           <span className="truncate">{children}</span>
           {!!count && (
-            <span className={clsx('tnum ml-auto rounded-full px-6 text-9', isActive ? 'bg-white/20 text-mint' : 'bg-brass-soft text-brass-text')}>{count}</span>
+            <span
+              className={clsx(
+                'tnum ml-auto rounded-full px-6 text-9',
+                isActive ? 'bg-white/20 text-mint' : 'bg-brass-soft text-brass-text',
+              )}
+            >
+              {count}
+            </span>
           )}
         </>
       )}
@@ -156,7 +183,10 @@ function UserMenu() {
   const navigate = useNavigate();
   return (
     <div className="relative border-t hairline pt-12">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-8 rounded-md px-6 py-4 text-left hover:bg-paper-2">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-8 rounded-md px-6 py-4 text-left hover:bg-paper-2"
+      >
         <Avatar name={me.name} />
         <span className="min-w-0 leading-tight">
           <span className="block truncate text-11 font-medium text-ink">{me.name}</span>
@@ -164,11 +194,23 @@ function UserMenu() {
         </span>
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-6 w-full rounded-lg bg-surface p-4 shadow-pop" onMouseLeave={() => setOpen(false)}>
-          <button className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-11 hover:bg-paper" onClick={() => { setOpen(false); navigate('/profile'); }}>
+        <div
+          className="absolute bottom-full left-0 mb-6 w-full rounded-lg bg-surface p-4 shadow-pop"
+          onMouseLeave={() => setOpen(false)}
+        >
+          <button
+            className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-11 hover:bg-paper"
+            onClick={() => {
+              setOpen(false);
+              navigate('/profile');
+            }}
+          >
             <UserRound className="size-14" strokeWidth={S} /> My profile &amp; referral link
           </button>
-          <button className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-11 text-signal-red hover:bg-coral-soft" onClick={() => void logout()}>
+          <button
+            className="flex w-full items-center gap-8 rounded-md px-10 py-7 text-11 text-signal-red hover:bg-coral-soft"
+            onClick={() => void logout()}
+          >
             <LogOut className="size-14" strokeWidth={S} /> Sign out
           </button>
         </div>
@@ -185,11 +227,17 @@ function TopBar() {
       <MobileNav />
       <GlobalSearch />
       <div className="relative ml-auto">
-        <button onClick={() => setNewOpen((o) => !o)} className="flex items-center gap-6 rounded-full bg-forest px-14 py-7 text-11 font-medium text-mint hover:bg-forest-2">
+        <button
+          onClick={() => setNewOpen((o) => !o)}
+          className="flex items-center gap-6 rounded-full bg-forest px-14 py-7 text-11 font-medium text-mint hover:bg-forest-2"
+        >
           <Plus className="size-14" strokeWidth={S} /> New
         </button>
         {newOpen && (
-          <div className="absolute right-0 top-full z-30 mt-6 w-[200px] rounded-lg bg-surface p-4 shadow-pop" onMouseLeave={() => setNewOpen(false)}>
+          <div
+            className="absolute right-0 top-full z-30 mt-6 w-[200px] rounded-lg bg-surface p-4 shadow-pop"
+            onMouseLeave={() => setNewOpen(false)}
+          >
             {[
               ['Candidate', '/candidates?new=1'],
               ['Requirement', '/requirements?new=1'],
@@ -197,7 +245,14 @@ function TopBar() {
               ['Task', '/tasks?new=1'],
               ['Import candidates', '/import'],
             ].map(([label, to]) => (
-              <button key={to} className="block w-full rounded-md px-10 py-7 text-left text-11 hover:bg-paper" onClick={() => { setNewOpen(false); navigate(to); }}>
+              <button
+                key={to}
+                className="block w-full rounded-md px-10 py-7 text-left text-11 hover:bg-paper"
+                onClick={() => {
+                  setNewOpen(false);
+                  navigate(to);
+                }}
+              >
                 {label}
               </button>
             ))}
@@ -222,14 +277,26 @@ function MobileNav() {
     ['/candidates', 'Candidates'],
     ['/pipeline', 'Pipeline'],
     ['/reports', 'Reports'],
-    ...(isManager(me.role) ? ([['/placements', 'Placements'], ['/activity', 'Activity']] as [string, string][]) : []),
+    ...(isManager(me.role)
+      ? ([
+          ['/placements', 'Placements'],
+          ['/activity', 'Activity'],
+        ] as [string, string][])
+      : []),
     ...(isAdmin(me.role) ? ([['/settings', 'Settings']] as [string, string][]) : []),
     ['/profile', 'Profile'],
   ];
   return (
-    <select className="input w-[140px] lg:hidden" value={location.pathname} onChange={(e) => navigate(e.target.value)} aria-label="Navigate">
+    <select
+      className="input w-[140px] lg:hidden"
+      value={location.pathname}
+      onChange={(e) => navigate(e.target.value)}
+      aria-label="Navigate"
+    >
       {links.map(([to, label]) => (
-        <option key={to} value={to}>{label}</option>
+        <option key={to} value={to}>
+          {label}
+        </option>
       ))}
     </select>
   );
@@ -267,7 +334,10 @@ function GlobalSearch() {
         <Search className="size-14 shrink-0" strokeWidth={S} />
         <input
           value={q}
-          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder="Search candidates, phone numbers, requirements, clients"
@@ -276,26 +346,46 @@ function GlobalSearch() {
       </label>
       {open && debounced.length >= 2 && data && (
         <div className="absolute left-0 right-0 top-full z-30 mt-6 max-h-[60vh] overflow-y-auto rounded-lg bg-surface p-6 shadow-pop">
-          {total === 0 && <p className="px-10 py-8 text-10 text-ink-3">No matches for “{debounced}”.</p>}
-          {data.candidates.length > 0 && <p className="px-10 pt-4 text-9 uppercase tracking-[0.06em] text-ink-3">Candidates</p>}
+          {total === 0 && (
+            <p className="px-10 py-8 text-10 text-ink-3">No matches for “{debounced}”.</p>
+          )}
+          {data.candidates.length > 0 && (
+            <p className="px-10 pt-4 text-9 uppercase tracking-[0.06em] text-ink-3">Candidates</p>
+          )}
           {data.candidates.map((c) => (
-            <button key={`c${c.id}`} onMouseDown={() => go(`/candidates/${c.id}`)} className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper">
+            <button
+              key={`c${c.id}`}
+              onMouseDown={() => go(`/candidates/${c.id}`)}
+              className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper"
+            >
               <Avatar name={c.name} size={22} />
               <span className="min-w-0 flex-1 truncate text-11">{c.name}</span>
               <span className="truncate text-9 text-ink-3">{c.currentCompany ?? c.phone}</span>
             </button>
           ))}
-          {data.requirements.length > 0 && <p className="px-10 pt-6 text-9 uppercase tracking-[0.06em] text-ink-3">Requirements</p>}
+          {data.requirements.length > 0 && (
+            <p className="px-10 pt-6 text-9 uppercase tracking-[0.06em] text-ink-3">Requirements</p>
+          )}
           {data.requirements.map((r) => (
-            <button key={`r${r.id}`} onMouseDown={() => go(`/requirements/${r.id}`)} className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper">
+            <button
+              key={`r${r.id}`}
+              onMouseDown={() => go(`/requirements/${r.id}`)}
+              className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper"
+            >
               <span className="text-9 text-ink-3">{r.code}</span>
               <span className="min-w-0 flex-1 truncate text-11">{r.title}</span>
               <span className="truncate text-9 text-ink-3">{r.clientName}</span>
             </button>
           ))}
-          {data.clients.length > 0 && <p className="px-10 pt-6 text-9 uppercase tracking-[0.06em] text-ink-3">Clients</p>}
+          {data.clients.length > 0 && (
+            <p className="px-10 pt-6 text-9 uppercase tracking-[0.06em] text-ink-3">Clients</p>
+          )}
           {data.clients.map((c) => (
-            <button key={`k${c.id}`} onMouseDown={() => go(`/clients/${c.id}`)} className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper">
+            <button
+              key={`k${c.id}`}
+              onMouseDown={() => go(`/clients/${c.id}`)}
+              className="flex w-full items-center gap-8 rounded-md px-10 py-6 text-left hover:bg-paper"
+            >
               <Building2 className="size-14 text-ink-3" strokeWidth={S} />
               <span className="min-w-0 flex-1 truncate text-11">{c.name}</span>
               <span className="text-9 text-ink-3">{c.city}</span>
@@ -312,7 +402,11 @@ function Notifications() {
   const { data: counts } = useCounts();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const { data } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get<Notification[]>('/notifications'), enabled: open });
+  const { data } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => api.get<Notification[]>('/notifications'),
+    enabled: open,
+  });
   const markAll = async () => {
     await api.post('/notifications/read');
     void qc.invalidateQueries({ queryKey: ['counts'] });
@@ -327,21 +421,43 @@ function Notifications() {
   };
   return (
     <div className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="relative rounded-full p-6 text-ink-2 hover:bg-paper-2" aria-label="Notifications">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="relative rounded-full p-6 text-ink-2 hover:bg-paper-2"
+        aria-label="Notifications"
+      >
         <Bell className="size-[18px]" strokeWidth={S} />
-        {!!counts?.unreadNotifications && <span className="absolute right-[5px] top-[5px] size-7 rounded-full bg-brass" />}
+        {!!counts?.unreadNotifications && (
+          <span className="absolute right-[5px] top-[5px] size-7 rounded-full bg-brass" />
+        )}
       </button>
       {open && (
         <div className="absolute right-0 top-full z-30 mt-6 w-[360px] rounded-lg bg-surface shadow-pop">
           <div className="flex items-center justify-between border-b hairline px-14 py-10">
             <p className="text-12 font-medium">Notifications</p>
-            <button className="text-10 text-forest-2 hover:underline" onClick={() => void markAll()}>Mark all read</button>
+            <button
+              className="text-10 text-forest-2 hover:underline"
+              onClick={() => void markAll()}
+            >
+              Mark all read
+            </button>
           </div>
           <div className="max-h-[420px] overflow-y-auto p-4">
-            {!data?.length && <p className="px-10 py-16 text-center text-10 text-ink-3">You're all caught up.</p>}
+            {!data?.length && (
+              <p className="px-10 py-16 text-center text-10 text-ink-3">You're all caught up.</p>
+            )}
             {data?.map((n) => (
-              <button key={n.id} onClick={() => void openOne(n)} className="flex w-full gap-8 rounded-md px-10 py-8 text-left hover:bg-paper">
-                <span className={clsx('mt-[6px] size-6 shrink-0 rounded-full', n.readAt ? 'bg-transparent' : 'bg-brass')} />
+              <button
+                key={n.id}
+                onClick={() => void openOne(n)}
+                className="flex w-full gap-8 rounded-md px-10 py-8 text-left hover:bg-paper"
+              >
+                <span
+                  className={clsx(
+                    'mt-[6px] size-6 shrink-0 rounded-full',
+                    n.readAt ? 'bg-transparent' : 'bg-brass',
+                  )}
+                />
                 <span className="min-w-0">
                   <span className="block text-11 font-medium">{n.title}</span>
                   {n.body && <span className="block text-10 text-ink-2">{n.body}</span>}

@@ -7,30 +7,114 @@ export interface ImportField {
 }
 
 export const CANDIDATE_IMPORT_FIELDS: ImportField[] = [
-  { key: 'name', label: 'Name', required: true, aliases: ['name', 'candidate name', 'candidate', 'full name'] },
-  { key: 'phone', label: 'Phone', aliases: ['phone', 'mobile', 'mobile no', 'contact', 'contact no', 'phone number', 'mobile number'] },
-  { key: 'altPhone', label: 'Alternate phone', aliases: ['alternate phone', 'alt phone', 'alternate mobile', 'other phone'] },
-  { key: 'email', label: 'Email', aliases: ['email', 'email id', 'mail', 'e-mail', 'email address'] },
-  { key: 'currentCompany', label: 'Current company', aliases: ['current company', 'company', 'current employer', 'employer', 'organization'] },
-  { key: 'currentTitle', label: 'Current designation', aliases: ['designation', 'current designation', 'title', 'role', 'current role'] },
-  { key: 'totalExp', label: 'Total experience (yrs)', aliases: ['experience', 'total experience', 'exp', 'total exp', 'yrs of exp', 'experience (yrs)'] },
-  { key: 'currentCtc', label: 'Current CTC', aliases: ['ctc', 'current ctc', 'cctc', 'current salary'] },
-  { key: 'expectedCtc', label: 'Expected CTC', aliases: ['expected ctc', 'ectc', 'expected salary'] },
-  { key: 'noticeDays', label: 'Notice period (days)', aliases: ['notice period', 'notice', 'np', 'notice period (days)'] },
+  {
+    key: 'name',
+    label: 'Name',
+    required: true,
+    aliases: ['name', 'candidate name', 'candidate', 'full name'],
+  },
+  {
+    key: 'phone',
+    label: 'Phone',
+    aliases: [
+      'phone',
+      'mobile',
+      'mobile no',
+      'contact',
+      'contact no',
+      'phone number',
+      'mobile number',
+    ],
+  },
+  {
+    key: 'altPhone',
+    label: 'Alternate phone',
+    aliases: ['alternate phone', 'alt phone', 'alternate mobile', 'other phone'],
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    aliases: ['email', 'email id', 'mail', 'e-mail', 'email address'],
+  },
+  {
+    key: 'currentCompany',
+    label: 'Current company',
+    aliases: ['current company', 'company', 'current employer', 'employer', 'organization'],
+  },
+  {
+    key: 'currentTitle',
+    label: 'Current designation',
+    aliases: ['designation', 'current designation', 'title', 'role', 'current role'],
+  },
+  {
+    key: 'totalExp',
+    label: 'Total experience (yrs)',
+    aliases: [
+      'experience',
+      'total experience',
+      'exp',
+      'total exp',
+      'yrs of exp',
+      'experience (yrs)',
+    ],
+  },
+  {
+    key: 'currentCtc',
+    label: 'Current CTC',
+    aliases: ['ctc', 'current ctc', 'cctc', 'current salary'],
+  },
+  {
+    key: 'expectedCtc',
+    label: 'Expected CTC',
+    aliases: ['expected ctc', 'ectc', 'expected salary'],
+  },
+  {
+    key: 'noticeDays',
+    label: 'Notice period (days)',
+    aliases: ['notice period', 'notice', 'np', 'notice period (days)'],
+  },
   { key: 'location', label: 'Current location', aliases: ['location', 'current location', 'city'] },
-  { key: 'preferredLocations', label: 'Preferred locations', aliases: ['preferred location', 'preferred locations'] },
+  {
+    key: 'preferredLocations',
+    label: 'Preferred locations',
+    aliases: ['preferred location', 'preferred locations'],
+  },
   { key: 'skills', label: 'Skills', aliases: ['skills', 'key skills', 'skill set', 'technology'] },
-  { key: 'qualification', label: 'Qualification', aliases: ['qualification', 'education', 'degree'] },
+  {
+    key: 'qualification',
+    label: 'Qualification',
+    aliases: ['qualification', 'education', 'degree'],
+  },
   { key: 'source', label: 'Source', aliases: ['source', 'sourced from', 'portal'] },
-  { key: 'linkedinUrl', label: 'LinkedIn URL', aliases: ['linkedin', 'linkedin url', 'linkedin profile'] },
-  { key: 'sourcedBy', label: 'Recruiter (sourced by)', aliases: ['recruiter', 'sourced by', 'recruiter name', 'owner', 'added by'] },
-  { key: 'addedOn', label: 'Added on (date)', aliases: ['date', 'added on', 'sourced date', 'created on', 'sourcing date'] },
-  { key: 'notes', label: 'Remarks', aliases: ['remarks', 'notes', 'comments', 'comment', 'feedback'] },
+  {
+    key: 'linkedinUrl',
+    label: 'LinkedIn URL',
+    aliases: ['linkedin', 'linkedin url', 'linkedin profile'],
+  },
+  {
+    key: 'sourcedBy',
+    label: 'Recruiter (sourced by)',
+    aliases: ['recruiter', 'sourced by', 'recruiter name', 'owner', 'added by'],
+  },
+  {
+    key: 'addedOn',
+    label: 'Added on (date)',
+    aliases: ['date', 'added on', 'sourced date', 'created on', 'sourcing date'],
+  },
+  {
+    key: 'notes',
+    label: 'Remarks',
+    aliases: ['remarks', 'notes', 'comments', 'comment', 'feedback'],
+  },
 ];
 
 /** Suggests a mapping CRM field -> sheet header by comparing normalised header names. */
 export function suggestMapping(headers: string[]): Record<string, string> {
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9()]+/g, ' ').trim();
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9()]+/g, ' ')
+      .trim();
   const mapping: Record<string, string> = {};
   const used = new Set<string>();
   for (const f of CANDIDATE_IMPORT_FIELDS) {
