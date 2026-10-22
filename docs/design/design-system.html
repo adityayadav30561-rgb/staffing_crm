@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nirman design system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300..800&family=Mona+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:#f6f2ea; --paper-2:#eee8dc; --paper-3:#e4dccb; --surface:#fff;
+  --ink:#16181b; --ink-2:#474c52; --ink-3:#80868c; --line:#e3ddd1;
+  --hairline:rgb(22 24 27/.08); --ring:rgb(22 24 27/.10);
+  --forest:#123b32; --forest-2:#1e5a4b; --forest-deep:#0b2620; --mint:#9fdcb8; --mint-soft:#e0f1e6; --moss:#4f9a74;
+  --cobalt:#3346d3; --cobalt-soft:#e3e7fc; --coral:#ec6a4c; --coral-2:#c9502f; --coral-soft:#fbe3d9;
+  --marigold:#f4b23e; --marigold-soft:#fcedc9; --peacock:#1f6f78; --peacock-soft:#d8ecea;
+  --rose:#d9668f; --rose-soft:#f8dde6; --lilac:#c7b9f3; --lilac-soft:#ece6fc;
+  --signal-red:#d24b36; --brass:#d9921a; --brass-text:#7a5d2c;
+  --display:"Mona Sans",ui-sans-serif,system-ui,sans-serif; --sans:"Funnel Sans",ui-sans-serif,system-ui,sans-serif;
+  --shadow-panel:0 1px 2px rgb(22 24 27/.06),0 10px 30px -14px rgb(22 24 27/.22);
+  --shadow-scene:0 2px 4px rgb(22 24 27/.06),0 24px 48px -20px rgb(22 24 27/.3),0 60px 90px -40px rgb(22 24 27/.25);
+  --shadow-lift:0 30px 60px -30px rgb(22 24 27/.45);
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.5; }
+.wrap { max-width:1200px; margin:0 auto; padding:56px 32px 120px; }
+h1,h2,h3 { font-family:var(--display); margin:0; }
+h1 { font-variation-settings:"wdth" 118; font-weight:760; letter-spacing:-.035em; line-height:.92; font-size:64px; }
+h2 { font-variation-settings:"wdth" 112; font-weight:700; letter-spacing:-.025em; line-height:1; font-size:36px; margin-top:88px; }
+h3 { font-variation-settings:"wdth" 106; font-weight:650; letter-spacing:-.015em; line-height:1.1; font-size:20px; margin-top:40px; }
+p.lead { max-width:46rem; font-size:18px; color:var(--ink-2); margin:20px 0 0; }
+.sub { color:var(--ink-2); max-width:46rem; margin:12px 0 0; }
+.files { display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
+.files a { color:var(--ink); text-decoration:none; padding:8px 16px; border-radius:999px; background:var(--surface); box-shadow:inset 0 0 0 1px var(--ring); font-size:15px; }
+.files a:hover { background:var(--forest); color:var(--mint); }
+nav.toc { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:28px; font-size:15px; }
+nav.toc a { color:var(--ink-2); }
+code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em; background:var(--paper-2); padding:1px 6px; border-radius:6px; }
+.tnum { font-variant-numeric:tabular-nums; }
+
+/* principles */
+.principles { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-top:24px; }
+.principles li { list-style:none; background:var(--surface); border-radius:16px; padding:20px; box-shadow:var(--shadow-panel); }
+.principles b { font-family:var(--display); font-variation-settings:"wdth" 106; font-weight:650; font-size:17px; display:block; margin-bottom:6px; }
+.principles span { color:var(--ink-2); font-size:15px; }
+.principles { padding:0; }
+
+/* swatches */
+.sw-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; margin-top:16px; }
+.sw { background:var(--surface); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-panel); }
+.sw i { display:block; height:72px; box-shadow:inset 0 -1px 0 var(--hairline); }
+.sw div { padding:10px 12px 12px; font-size:13px; }
+.sw b { display:block; font-size:14px; }
+.sw code { background:none; padding:0; color:var(--ink-2); }
+.sw em { display:block; font-style:normal; color:var(--ink-3); margin-top:2px; }
+
+/* tables */
+table { width:100%; border-collapse:collapse; margin-top:16px; background:var(--surface); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-panel); font-size:14px; }
+th,td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--hairline); vertical-align:middle; }
+th { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:600; background:#faf9f5; }
+tr:last-child td { border-bottom:0; }
+
+/* specimens */
+.spec { background:var(--surface); border-radius:16px; padding:28px; margin-top:16px; box-shadow:var(--shadow-panel); }
+.spec .row { display:grid; grid-template-columns:200px 1fr; gap:24px; align-items:baseline; padding:14px 0; border-bottom:1px solid var(--hairline); }
+.spec .row:last-child { border-bottom:0; }
+.spec .meta { font-size:13px; color:var(--ink-3); }
+.v-display { font-family:var(--display); font-variation-settings:"wdth" 118; font-weight:760; letter-spacing:-.035em; line-height:.92; }
+.v-heading { font-family:var(--display); font-variation-settings:"wdth" 112; font-weight:700; letter-spacing:-.025em; line-height:1; }
+.v-title { font-family:var(--display); font-variation-settings:"wdth" 106; font-weight:650; letter-spacing:-.015em; line-height:1.1; }
+.v-mock { font-family:var(--display); font-variation-settings:"wdth" 112; font-weight:700; letter-spacing:-.03em; line-height:.98; }
+
+/* CRM component samples, drawn at 2x so they are easy to inspect */
+.stage2x { background:var(--surface); border-radius:16px; padding:24px; margin-top:16px; box-shadow:var(--shadow-panel); overflow:auto; }
+.x2 { zoom:2; }
+.row-flex { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start; }
+.c-label { font-size:13px; color:var(--ink-3); margin:24px 0 8px; }
+.c-label:first-child { margin-top:0; }
+.nav { width:180px; background:#f3f1ea; padding:10px; border-radius:8px; font-size:12px; }
+.nav span { display:flex; align-items:center; gap:10px; padding:7px 12px; border-radius:999px; color:var(--ink-2); }
+.nav span.on { background:var(--forest); color:var(--mint); font-weight:500; }
+.nav .count { margin-left:auto; border-radius:999px; padding:0 6px; font-size:9px; background:var(--marigold-soft); color:var(--brass-text); }
+.nav span.on .count { background:rgb(255 255 255/.2); color:var(--mint); }
+.btn-primary { display:inline-flex; align-items:center; gap:6px; border-radius:999px; background:var(--forest); color:var(--mint); padding:7px 12px; font-size:11px; font-weight:500; }
+.btn-ghost { display:inline-flex; align-items:center; gap:6px; border-radius:2px; color:var(--ink-2); padding:7px 10px; font-size:11px; box-shadow:inset 0 0 0 1px var(--ring); }
+.search { display:flex; align-items:center; gap:8px; border-radius:999px; background:var(--paper); padding:7px 12px; font-size:11px; color:var(--ink-3); width:300px; }
+.kpi { width:220px; border-radius:8px; padding:12px; }
+.kpi p { margin:0; }
+.kpi .k { font-size:10px; color:var(--ink-2); }
+.kpi .v { font-size:24px; }
+.kpi .d { font-size:9px; color:var(--ink-3); margin-top:2px; }
+.kpi .d.red { color:var(--signal-red); font-weight:500; }
+.kpi .line { display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-top:4px; }
+.pill { display:inline-flex; align-items:center; border-radius:999px; padding:2px 8px; font-size:9px; font-weight:500; }
+.avatar { display:inline-grid; place-items:center; width:22px; height:22px; border-radius:999px; font-size:8px; font-weight:600; }
+.trow { display:grid; grid-template-columns:22px 1.6fr 1fr 80px 70px; gap:10px; align-items:center; width:520px; padding:9px 12px; font-size:11px; border-bottom:1px solid var(--hairline); background:var(--surface); }
+.trow.sel { background:rgb(238 232 220/.6); }
+.trow .muted { color:var(--ink-3); font-size:10px; }
+.task { display:flex; align-items:center; gap:10px; width:300px; padding:8px 10px; border-radius:6px; background:var(--surface); box-shadow:inset 0 0 0 1px var(--hairline); font-size:11px; }
+.task .tic { display:grid; place-items:center; width:22px; height:22px; border-radius:6px; }
+.ic { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.ic.s12 { width:12px; height:12px; } .ic.s14 { width:14px; height:14px; }
+.task .when { margin-left:auto; font-size:9px; color:var(--ink-3); }
+.task .when.red { color:var(--signal-red); }
+
+/* layout diagram */
+.frame { position:relative; width:100%; max-width:930px; aspect-ratio:1240/590; background:var(--surface); border-radius:16px; box-shadow:0 40px 100px -30px rgb(0 0 0/.35); outline:1px solid rgb(0 0 0/.08); overflow:hidden; margin-top:16px; font-size:12px; }
+.frame > div { position:absolute; display:grid; place-items:center; text-align:center; color:var(--ink-2); }
+.f-side { left:0; top:0; bottom:0; width:16.9%; background:#f3f1ea; border-right:1px solid var(--hairline); }
+.f-top { left:16.9%; right:0; top:0; height:8%; border-bottom:1px solid var(--hairline); }
+.f-main { left:16.9%; right:25.8%; top:8%; bottom:0; background:repeating-linear-gradient(45deg,transparent 0 10px,rgb(22 24 27/.025) 10px 20px); }
+.f-detail { right:0; width:25.8%; top:8%; bottom:0; background:#faf9f5; border-left:1px solid var(--hairline); }
+
+/* radius + shadow */
+.rad { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; }
+.rad div { width:120px; height:84px; background:var(--surface); box-shadow:inset 0 0 0 1.5px var(--forest); display:grid; place-items:center; font-size:13px; color:var(--ink-2); }
+.shad { display:flex; flex-wrap:wrap; gap:28px; margin-top:20px; }
+.shad div { width:200px; height:110px; background:var(--surface); border-radius:16px; display:grid; place-items:center; font-size:13px; color:var(--ink-2); text-align:center; padding:8px; }
+
+/* website buttons */
+.btn { display:inline-flex; align-items:center; justify-content:center; height:48px; padding:0 24px; border-radius:999px; font-size:15.6px; font-weight:500; text-decoration:none; }
+.btn.primary { background:var(--ink); color:var(--paper); }
+.btn.primary:hover { background:var(--cobalt); }
+.btn.accent { background:var(--marigold); color:var(--ink); }
+.btn.secondary { background:rgb(255 255 255/.7); color:var(--ink); box-shadow:inset 0 0 0 1px rgb(22 24 27/.15); }
+.btn.light { background:var(--surface); color:var(--ink); box-shadow:var(--shadow-panel); }
+.dark { background:var(--forest-deep); border-radius:16px; padding:24px; display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.btn.ghost { color:#fff; box-shadow:inset 0 0 0 1px rgb(255 255 255/.35); }
+.btn.mint { background:var(--mint); color:var(--forest-deep); }
+footer { margin-top:96px; color:var(--ink-3); font-size:14px; }
+@media (max-width:700px) { h1 { font-size:44px; } .spec .row { grid-template-columns:1fr; gap:6px; } .x2 { zoom:1.25; } }
+</style>
+</head>
+<body>
+<!-- Lucide icons (ISC licence), stroke 1.8 as in the CRM -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-dash" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-kanban" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  </defs>
+</svg>
+<main class="wrap">
+  <h1>Nirman design system</h1>
+  <p class="lead">Colours, type, sizes and principles behind the Nirman website and the Nirman CRM screens on the homepage. Everything here comes from the live code (<code>nirman-site/src/app/globals.css</code> and <code>components/nirman-crm.tsx</code>).</p>
+  <div class="files">
+    <a href="crm-screens.html">CRM screens (HTML)</a>
+    <a href="tokens.css">tokens.css</a>
+    <a href="tokens.json">tokens.json</a>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#principles">Principles</a><a href="#colour">Colour</a><a href="#type">Typography</a><a href="#layout">CRM layout</a>
+    <a href="#components">CRM components</a><a href="#shape">Radius and elevation</a><a href="#icons">Icons and motion</a><a href="#website">Website</a>
+  </nav>
+
+  <!-- ============================== Principles ============================== -->
+  <h2 id="principles">Principles</h2>
+  <p class="sub">What makes the CRM screens feel clean. Keep these when designing new screens.</p>
+  <ul class="principles">
+    <li><b>Calm surfaces, colour with a job</b><span>A white app on warm neutrals. Colour only marks meaning: a group of numbers, a status, an alert. Never decoration.</span></li>
+    <li><b>One action colour</b><span>Forest green with mint text means "do this" or "you are here": the primary button and the active nav item. Nothing else uses it.</span></li>
+    <li><b>Numbers first</b><span>Figures are large, in Mona Sans with tabular digits. Their labels are small and grey, so the eye lands on the number.</span></li>
+    <li><b>Three text levels only</b><span>Ink for content, ink-2 for supporting text, ink-3 for meta and captions. Hierarchy comes from size and grey, not from extra colours.</span></li>
+    <li><b>Hairlines, not boxes</b><span>Sections are split by 8% ink dividers and 10% rings. Shadows only on things that float (the app window, cards over photos).</span></li>
+    <li><b>Soft tint, dark text</b><span>Every tinted background pairs with a darker text of the same hue (mint-soft with forest, brass-soft with brown), so pills stay readable.</span></li>
+    <li><b>Rounded, but tight</b><span>Pills for actions, nav and status; 6 to 8px corners on cards and tiles; 16px on the app window. Small radii keep data dense.</span></li>
+    <li><b>Small, consistent icons</b><span>Lucide icons at a 1.8 stroke, 12 to 16px, always next to a text label.</span></li>
+    <li><b>Believable sample data</b><span>Indian names, places and rupee figures, so screens read as real work. Always marked as sample data on the site.</span></li>
+    <li><b>Quiet motion</b><span>Switching views fades in over 180ms. No bounces or slides inside the app. Reduced-motion settings turn it off.</span></li>
+  </ul>
+
+  <!-- ============================== Colour ============================== -->
+  <h2 id="colour">Colour</h2>
+  <h3>Neutrals</h3>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#f6f2ea"></i><div><b>paper</b><code>#f6f2ea</code><em>Page background, CRM search field</em></div></div>
+    <div class="sw"><i style="background:#eee8dc"></i><div><b>paper-2</b><code>#eee8dc</code><em>Quiet fills, selected row, neutral pill</em></div></div>
+    <div class="sw"><i style="background:#e4dccb"></i><div><b>paper-3</b><code>#e4dccb</code><em>Deeper neutral fill</em></div></div>
+    <div class="sw"><i style="background:#ffffff"></i><div><b>surface</b><code>#ffffff</code><em>App window, cards</em></div></div>
+    <div class="sw"><i style="background:#16181b"></i><div><b>ink</b><code>#16181b</code><em>Primary text</em></div></div>
+    <div class="sw"><i style="background:#474c52"></i><div><b>ink-2</b><code>#474c52</code><em>Secondary text</em></div></div>
+    <div class="sw"><i style="background:#80868c"></i><div><b>ink-3</b><code>#80868c</code><em>Meta, captions, placeholders</em></div></div>
+    <div class="sw"><i style="background:#e3ddd1"></i><div><b>line</b><code>#e3ddd1</code><em>Borders on paper</em></div></div>
+  </div>
+
+  <h3>Nirman CRM (forest family)</h3>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#123b32"></i><div><b>forest</b><code>#123b32</code><em>Primary button, active nav</em></div></div>
+    <div class="sw"><i style="background:#1e5a4b"></i><div><b>forest-2</b><code>#1e5a4b</code><em>Hover, second dark green</em></div></div>
+    <div class="sw"><i style="background:#0b2620"></i><div><b>forest-deep</b><code>#0b2620</code><em>Dark band behind the app</em></div></div>
+    <div class="sw"><i style="background:#9fdcb8"></i><div><b>mint</b><code>#9fdcb8</code><em>Text and icons on forest</em></div></div>
+    <div class="sw"><i style="background:#e0f1e6"></i><div><b>mint-soft (sage)</b><code>#e0f1e6</code><em>Positive tint, "New" status</em></div></div>
+    <div class="sw"><i style="background:#4f9a74"></i><div><b>moss</b><code>#4f9a74</code><em>Success marks, progress</em></div></div>
+    <div class="sw"><i style="background:#f3f1ea"></i><div><b>sidebar</b><code>#f3f1ea</code><em>App sidebar</em></div></div>
+    <div class="sw"><i style="background:#faf9f5"></i><div><b>detail panel</b><code>#faf9f5</code><em>Right-hand lead panel</em></div></div>
+  </div>
+
+  <h3>Tints for KPI tiles</h3>
+  <p class="sub">Each of the four headline numbers gets its own soft tint; text on them stays ink.</p>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#e3e7fc"></i><div><b>cobalt-soft</b><code>#e3e7fc</code><em>New leads</em></div></div>
+    <div class="sw"><i style="background:#e0f1e6"></i><div><b>mint-soft</b><code>#e0f1e6</code><em>Open pipeline</em></div></div>
+    <div class="sw"><i style="background:#fcedc9"></i><div><b>marigold-soft</b><code>#fcedc9</code><em>Won this month</em></div></div>
+    <div class="sw"><i style="background:#fbe3d9"></i><div><b>coral-soft</b><code>#fbe3d9</code><em>Follow-ups due</em></div></div>
+  </div>
+
+  <h3>Status pills and signals</h3>
+  <table>
+    <thead><tr><th>Use</th><th>Sample</th><th>Background</th><th>Text</th></tr></thead>
+    <tbody>
+      <tr><td>New lead</td><td><span class="pill" style="background:#e0f1e6;color:#123b32;zoom:1.5">New</span></td><td><code>#e0f1e6</code></td><td><code>#123b32</code></td></tr>
+      <tr><td>Contacted</td><td><span class="pill" style="background:#eee8dc;color:#474c52;zoom:1.5">Contacted</span></td><td><code>#eee8dc</code></td><td><code>#474c52</code></td></tr>
+      <tr><td>Proposal</td><td><span class="pill" style="background:#fcedc9;color:#7a5d2c;zoom:1.5">Proposal</span></td><td><code>#fcedc9</code></td><td><code>#7a5d2c</code></td></tr>
+      <tr><td>Negotiation</td><td><span class="pill" style="background:#e3e9ef;color:#3346d3;zoom:1.5">Negotiation</span></td><td><code>#e3e9ef</code></td><td><code>#3346d3</code></td></tr>
+      <tr><td>Overdue / alert text</td><td><span style="color:#d24b36;font-weight:500">1 overdue</span></td><td>none</td><td><code>#d24b36</code> signal-red</td></tr>
+      <tr><td>Notification dot, counters</td><td><span style="display:inline-block;width:10px;height:10px;border-radius:99px;background:#d9921a"></span></td><td><code>#d9921a</code> brass</td><td>counter text <code>#7a5d2c</code> on <code>#fcedc9</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Chart palette</h3>
+  <p class="sub">Muted greens and sand so charts sit quietly next to the data. Sparklines are ink at a 1.4px stroke, with no grid.</p>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#1f4d3a"></i><div><b>chart-1</b><code>#1f4d3a</code><em>Main series, largest share</em></div></div>
+    <div class="sw"><i style="background:#6f8f72"></i><div><b>chart-2</b><code>#6f8f72</code></div></div>
+    <div class="sw"><i style="background:#c9a76a"></i><div><b>chart-3</b><code>#c9a76a</code></div></div>
+    <div class="sw"><i style="background:#c3cfbd"></i><div><b>chart-4</b><code>#c3cfbd</code></div></div>
+    <div class="sw"><i style="background:#16181b"></i><div><b>sparkline</b><code>#16181b</code><em>1.4px line, no fill</em></div></div>
+  </div>
+
+  <h3>Service colours (website)</h3>
+  <p class="sub">Each service owns one colour, with a soft and a dark variant. The CRM keeps to the forest family.</p>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:linear-gradient(90deg,#3346d3 60%,#e3e7fc 60%)"></i><div><b>SEO: cobalt</b><code>#3346d3 / #e3e7fc</code></div></div>
+    <div class="sw"><i style="background:linear-gradient(90deg,#ec6a4c 60%,#fbe3d9 60%)"></i><div><b>Websites: coral</b><code>#ec6a4c / #fbe3d9</code></div></div>
+    <div class="sw"><i style="background:linear-gradient(90deg,#1f6f78 60%,#d8ecea 60%)"></i><div><b>Software: peacock</b><code>#1f6f78 / #d8ecea</code></div></div>
+    <div class="sw"><i style="background:linear-gradient(90deg,#f4b23e 60%,#fcedc9 60%)"></i><div><b>Mobile apps: marigold</b><code>#f4b23e / #fcedc9</code></div></div>
+    <div class="sw"><i style="background:linear-gradient(90deg,#d9668f 60%,#f8dde6 60%)"></i><div><b>Marketing: rose</b><code>#d9668f / #f8dde6</code></div></div>
+    <div class="sw"><i style="background:linear-gradient(90deg,#c7b9f3 60%,#ece6fc 60%)"></i><div><b>Lilac (process bands)</b><code>#c7b9f3 / #ece6fc</code></div></div>
+  </div>
+
+  <!-- ============================== Type ============================== -->
+  <h2 id="type">Typography</h2>
+  <p class="sub">Two Google Fonts. <b>Mona Sans</b> (variable, with a width axis) is the display voice for headings and numbers; <b>Funnel Sans</b> is for body and all UI text. Every figure uses tabular digits.</p>
+  <div class="spec">
+    <div class="row"><div class="meta">Mona Sans · display<br>wdth 118 · 760 · −0.035em · lh 0.92</div><div class="v-display" style="font-size:56px">Build better.</div></div>
+    <div class="row"><div class="meta">Mona Sans · heading<br>wdth 112 · 700 · −0.025em · lh 1</div><div class="v-heading" style="font-size:36px">Your sales, in one place</div></div>
+    <div class="row"><div class="meta">Mona Sans · title<br>wdth 106 · 650 · −0.015em · lh 1.1</div><div class="v-title" style="font-size:22px">Follow-ups due today</div></div>
+    <div class="row"><div class="meta">Mona Sans · in-app display<br>wdth 112 · 700 · −0.03em · lh 0.98</div><div class="v-mock tnum" style="font-size:40px">₹44.4L <span style="font-size:24px">Good morning, Anil</span></div></div>
+    <div class="row"><div class="meta">Funnel Sans · body<br>400 · lh 1.35 in app, 1.6 on site</div><div style="font-size:17px;max-width:40rem">Every enquiry from your website, WhatsApp and portals lands in one list, assigned to the right person within minutes.</div></div>
+  </div>
+
+  <h3>CRM type scale (px at the 1240 × 590 desktop frame)</h3>
+  <table>
+    <thead><tr><th>Size</th><th>Font</th><th>Used for</th><th>Sample</th></tr></thead>
+    <tbody>
+      <tr><td class="tnum">24</td><td>Mona Sans, in-app display</td><td>KPI values</td><td class="v-mock tnum" style="font-size:24px">38</td></tr>
+      <tr><td class="tnum">18</td><td>Mona Sans, in-app display</td><td>Screen title</td><td class="v-mock" style="font-size:18px">Good morning, Anil</td></tr>
+      <tr><td class="tnum">16</td><td>Mona Sans</td><td>Large figures in reports</td><td class="v-mock tnum" style="font-size:16px">₹16.3L</td></tr>
+      <tr><td class="tnum">14</td><td>Funnel Sans 600</td><td>Product name in sidebar</td><td style="font-size:14px;font-weight:600;letter-spacing:-.01em">Nirman CRM</td></tr>
+      <tr><td class="tnum">12</td><td>Funnel Sans 400/500</td><td>Navigation, card titles</td><td style="font-size:12px">Pipeline</td></tr>
+      <tr><td class="tnum">11</td><td>Funnel Sans 400/500</td><td>Row text, buttons, workspace name</td><td style="font-size:11px">Kavya Rao · Greenfield PG</td></tr>
+      <tr><td class="tnum">10</td><td>Funnel Sans 400</td><td>Labels, table cells, secondary text</td><td style="font-size:10px;color:#474c52">New leads this week</td></tr>
+      <tr><td class="tnum">9</td><td>Funnel Sans 400/500</td><td>Captions, meta, badges, times</td><td style="font-size:9px;color:#80868c">+12 vs last week</td></tr>
+      <tr><td class="tnum">8</td><td>Funnel Sans 600</td><td>Avatar initials, micro labels</td><td style="font-size:8px;font-weight:600">AS</td></tr>
+    </tbody>
+  </table>
+  <p class="sub">The CRM is drawn on a fixed 1240 × 590 canvas that scales with its container, so these sizes stay in proportion on every screen. On a 1440px desktop the canvas renders at about 1:1.</p>
+
+  <h3>Website type scale</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Voice</th><th>Size</th></tr></thead>
+    <tbody>
+      <tr><td>Hero H1</td><td>display</td><td><code>clamp(2.9rem, 10.5vw, 4.8rem)</code>, desktop <code>min(5.4vw, 8.5rem)</code></td></tr>
+      <tr><td>Section heading</td><td>display</td><td><code>clamp(2.6rem, 6vw, 5.4rem)</code></td></tr>
+      <tr><td>Sub heading</td><td>heading</td><td><code>clamp(1.8rem, 3.4vw, 2.9rem)</code></td></tr>
+      <tr><td>Card title</td><td>title</td><td><code>1.3rem</code></td></tr>
+      <tr><td>Body</td><td>Funnel Sans</td><td><code>1rem–1.2rem</code>, line height 1.6</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================== Layout ============================== -->
+  <h2 id="layout">CRM layout</h2>
+  <p class="sub">Measurements in px on the 1240 × 590 frame.</p>
+  <div class="frame" role="img" aria-label="Diagram of the CRM window: sidebar on the left, top bar, main area and a detail panel on the right">
+    <div class="f-side">Sidebar<br>210 wide<br>padding 14 / 16<br><code>#f3f1ea</code></div>
+    <div class="f-top">Top bar · padding 18 / 11 · search max 320</div>
+    <div class="f-main">Main area<br>padding 16 · gaps 10–12</div>
+    <div class="f-detail">Detail panel<br>320 wide · padding 18<br><code>#faf9f5</code></div>
+  </div>
+  <table>
+    <thead><tr><th>Element</th><th>Spec</th></tr></thead>
+    <tbody>
+      <tr><td>App window</td><td>White, radius 16, shadow <code>0 40px 100px -30px rgb(0 0 0/.7)</code> + 1px ring <code>rgb(0 0 0/.2)</code>, on forest-deep with a faint dot grid</td></tr>
+      <tr><td>Nav item</td><td>Pill, padding 12 × 7, icon 14 + gap 10, text 12. Active: forest bg, mint text, weight 500</td></tr>
+      <tr><td>Primary button</td><td>Pill, forest bg, mint text 11/500, padding 12 × 7, icon 12</td></tr>
+      <tr><td>Search</td><td>Pill, paper bg, ink-3 text 11, icon 12, padding 12 × 7</td></tr>
+      <tr><td>KPI tile</td><td>Radius 8, padding 12, tint background, label 10 ink-2, value 24 display, note 9 ink-3 (red when overdue), sparkline 70 × 24</td></tr>
+      <tr><td>Table row</td><td>Text 11, meta 10 ink-3, divider 8% ink, selected row paper-2 at 60%</td></tr>
+      <tr><td>Avatar</td><td>22 circle, initials 8/600 (sage + forest, forest + paper, or brass-soft + brown)</td></tr>
+      <tr><td>Spacing steps</td><td>2, 4, 6, 8, 10, 12, 14, 16, 18</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================== Components ============================== -->
+  <h2 id="components">CRM components</h2>
+  <p class="sub">Rebuilt here in plain HTML and CSS, shown at 2× so details are easy to inspect.</p>
+  <div class="stage2x"><div class="x2">
+    <p class="c-label">Navigation</p>
+    <div class="row-flex">
+      <div class="nav">
+        <span><svg class="ic s14"><use href="#i-dash"/></svg>Dashboard</span><span><svg class="ic s14"><use href="#i-users"/></svg>Leads</span><span class="on"><svg class="ic s14"><use href="#i-kanban"/></svg>Pipeline</span><span><svg class="ic s14"><use href="#i-cal"/></svg>Follow-ups <em class="count" style="font-style:normal">6</em></span>
+      </div>
+      <div style="display:grid;gap:10px">
+        <span class="btn-primary"><svg class="ic s12"><use href="#i-plus"/></svg>New lead</span>
+        <span class="btn-ghost"><svg class="ic s12"><use href="#i-sliders"/></svg>Filters</span>
+        <span class="search"><svg class="ic s12"><use href="#i-search"/></svg>Search leads, companies, phone numbers</span>
+      </div>
+    </div>
+
+    <p class="c-label">KPI tiles</p>
+    <div class="row-flex">
+      <div class="kpi" style="background:#e3e7fc"><p class="k">New leads this week</p><div class="line"><p class="v v-mock tnum">38</p><svg width="70" height="24" viewBox="0 0 70 24"><polyline fill="none" stroke="#16181b" stroke-width="1.4" points="0,20 11,14 23,17 35,10 46,13 58,6 70,1"/></svg></div><p class="d">+12 vs last week</p></div>
+      <div class="kpi" style="background:#fbe3d9"><p class="k">Follow-ups due today</p><div class="line"><p class="v v-mock tnum">6</p><svg width="70" height="24" viewBox="0 0 70 24"><polyline fill="none" stroke="#16181b" stroke-width="1.4" points="0,18 11,12 23,15 35,6 46,12 58,3 70,8"/></svg></div><p class="d red">1 overdue</p></div>
+    </div>
+
+    <p class="c-label">Status pills and avatars</p>
+    <div class="row-flex" style="align-items:center">
+      <span class="pill" style="background:#e0f1e6;color:#123b32">New</span>
+      <span class="pill" style="background:#eee8dc;color:#474c52">Contacted</span>
+      <span class="pill" style="background:#fcedc9;color:#7a5d2c">Proposal</span>
+      <span class="pill" style="background:#e3e9ef;color:#3346d3">Negotiation</span>
+      <span class="avatar" style="background:#e0f1e6;color:#123b32">KR</span>
+      <span class="avatar" style="background:#123b32;color:#f6f2ea">AS</span>
+      <span class="avatar" style="background:#fcedc9;color:#7a5d2c">PN</span>
+    </div>
+
+    <p class="c-label">Lead rows</p>
+    <div style="border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--hairline);width:fit-content">
+      <div class="trow"><span class="avatar" style="background:#e0f1e6;color:#123b32">KR</span><span>Kavya Rao<br><span class="muted">Greenfield PG</span></span><span class="muted">Website</span><span><span class="pill" style="background:#fcedc9;color:#7a5d2c">Proposal</span></span><span class="tnum">₹2.4L</span></div>
+      <div class="trow sel"><span class="avatar" style="background:#123b32;color:#f6f2ea">VM</span><span>Vikram Mehta<br><span class="muted">Haveli Hotels</span></span><span class="muted">Referral</span><span><span class="pill" style="background:#e3e9ef;color:#3346d3">Negotiation</span></span><span class="tnum">₹6.8L</span></div>
+    </div>
+
+    <p class="c-label">Follow-up tasks</p>
+    <div style="display:grid;gap:6px">
+      <div class="task"><span class="tic" style="background:#fbe3d9;color:#c9502f"><svg class="ic s12"><use href="#i-chat"/></svg></span>WhatsApp Kavya re: quote<span class="when red">Overdue</span></div>
+      <div class="task"><span class="tic" style="background:#fcedc9;color:#7a5200"><svg class="ic s12"><use href="#i-mail"/></svg></span>Send proposal, Haveli Hotels<span class="when">6:00 pm</span></div>
+    </div>
+  </div></div>
+  <p class="sub">Icons are <a href="https://lucide.dev">Lucide</a>, inlined as SVG. For the exact markup of full screens, use <a href="crm-screens.html">crm-screens.html</a>.</p>
+
+  <!-- ============================== Shape ============================== -->
+  <h2 id="shape">Radius and elevation</h2>
+  <h3>Radius (CRM, px)</h3>
+  <div class="rad">
+    <div style="border-radius:2px">xs · 2<br>ghost button</div>
+    <div style="border-radius:4px">sm · 4</div>
+    <div style="border-radius:6px">md · 6<br>tasks, tiles</div>
+    <div style="border-radius:8px">lg · 8<br>KPI tiles</div>
+    <div style="border-radius:12px">xl · 12</div>
+    <div style="border-radius:16px">2xl · 16<br>app window</div>
+    <div style="border-radius:999px">pill<br>buttons, nav</div>
+  </div>
+  <p class="sub">On the website: panels 2rem–2.5rem, cards 1.75–2rem, buttons and chips always pills.</p>
+  <h3>Shadows</h3>
+  <div class="shad">
+    <div style="box-shadow:var(--shadow-panel)">panel<br><code>0 1px 2px /.06, 0 10px 30px -14px /.22</code></div>
+    <div style="box-shadow:var(--shadow-scene)">scene<br>floating mockups</div>
+    <div style="box-shadow:var(--shadow-lift)">lift<br>cards on hover</div>
+  </div>
+
+  <!-- ============================== Icons & motion ============================== -->
+  <h2 id="icons">Icons and motion</h2>
+  <table>
+    <tbody>
+      <tr><td>Icon set</td><td><a href="https://lucide.dev">Lucide</a> (<code>lucide-react</code>), stroke width 1.8 in the CRM, 2 elsewhere</td></tr>
+      <tr><td>Icon sizes (CRM)</td><td>12 in buttons and search, 13–14 in nav, 16 for the bell. Always next to a label</td></tr>
+      <tr><td>CRM icons used</td><td>LayoutDashboard, Users, KanbanSquare, Contact, CalendarCheck, ChartColumn, Settings, Search, SlidersHorizontal, Plus, Bell, Phone, Mail, MessageCircle</td></tr>
+      <tr><td>No brand logos</td><td>Never use WhatsApp, Meta, Instagram or Facebook logos; a plain chat bubble (MessageCircle) stands in for WhatsApp</td></tr>
+      <tr><td>View switch</td><td>Opacity fade, 180ms, ease-out</td></tr>
+      <tr><td>Settle curve</td><td><code>cubic-bezier(0.2, 0.8, 0.2, 1)</code> for larger entrances on the site</td></tr>
+      <tr><td>Reduced motion</td><td>All animation off when the visitor asks for reduced motion</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================== Website ============================== -->
+  <h2 id="website">Website</h2>
+  <h3>Buttons</h3>
+  <p class="sub">Pills, height 40 / 48 / 56 (sm / md / lg), weight 500.</p>
+  <div class="row-flex" style="margin-top:16px">
+    <a class="btn primary" href="#website">Primary</a>
+    <a class="btn accent" href="#website">Accent</a>
+    <a class="btn secondary" href="#website">Secondary</a>
+    <a class="btn light" href="#website">Light</a>
+  </div>
+  <div class="dark">
+    <a class="btn mint" href="#website">Book a demo</a>
+    <a class="btn ghost" href="#website">Ghost on dark</a>
+  </div>
+  <h3>Fluid scale and container</h3>
+  <table>
+    <thead><tr><th>Device</th><th>Width</th><th>1rem</th></tr></thead>
+    <tbody>
+      <tr><td>Phone</td><td>&lt; 640px</td><td><code>clamp(14px, 100vw / 24.375, 18px)</code>, 16px at 390</td></tr>
+      <tr><td>Tablet</td><td>640–1023px</td><td><code>100vw / 48</code>, 16px at 768</td></tr>
+      <tr><td>Desktop</td><td>≥ 1024px</td><td><code>max(13px, 100vw / 90)</code>, 16px at 1440</td></tr>
+    </tbody>
+  </table>
+  <p class="sub">Every size is in rem, so each device class looks the same at any resolution. Sections share one container: full width, max 124rem, side padding 1rem / 1.5rem / <code>clamp(2rem, 3vw, 4rem)</code>.</p>
+
+  <footer>Nirman design system · generated from the site code on 22 October 2026. Sample names and figures are illustrative.</footer>
+</main>
+</body>
+</html>

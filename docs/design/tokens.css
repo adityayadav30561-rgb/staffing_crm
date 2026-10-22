@@ -1,0 +1,81 @@
+/*
+ * Nirman design tokens (website + Nirman CRM screens).
+ * Source of truth in code: nirman-site/src/app/globals.css (@theme).
+ * Fonts: load from Google Fonts
+ *   https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300..800&family=Mona+Sans:wdth,wght@75..125,200..900&display=swap
+ */
+:root {
+  /* ---------- Neutrals ---------- */
+  --paper: #f6f2ea;        /* page background (warm ivory); CRM search fields */
+  --paper-2: #eee8dc;      /* quiet fills, hover rows, neutral pills */
+  --paper-3: #e4dccb;      /* deeper neutral fill */
+  --surface: #ffffff;      /* cards, app window */
+  --ink: #16181b;          /* primary text */
+  --ink-2: #474c52;        /* secondary text */
+  --ink-3: #80868c;        /* tertiary text, meta, captions */
+  --line: #e3ddd1;         /* borders on paper */
+  --hairline: rgb(22 24 27 / 0.08);  /* CRM dividers (ink at 8%) */
+  --ring: rgb(22 24 27 / 0.10);      /* CRM outlines (ink at 10%) */
+
+  /* ---------- Nirman CRM (forest family) ---------- */
+  --forest: #123b32;       /* primary action, active nav */
+  --forest-2: #1e5a4b;     /* hover / secondary dark green */
+  --forest-deep: #0b2620;  /* dark section behind the app */
+  --mint: #9fdcb8;         /* text and icons on forest */
+  --mint-soft: #e0f1e6;    /* positive tint, "New" status (also --sage) */
+  --sage-2: #b8dcc6;
+  --sage-3: #86bd9c;
+  --moss: #4f9a74;         /* success marks, progress */
+  --crm-sidebar: #f3f1ea;  /* app sidebar */
+  --crm-detail: #faf9f5;   /* right-hand detail panel */
+
+  /* ---------- Service colours (one per service) ---------- */
+  --cobalt: #3346d3;  --cobalt-2: #2433a6;  --cobalt-soft: #e3e7fc;   /* SEO; info */
+  --coral: #ec6a4c;   --coral-2: #c9502f;   --coral-soft: #fbe3d9;    /* Websites; urgent */
+  --marigold: #f4b23e; --marigold-2: #d9921a; --marigold-soft: #fcedc9; /* Mobile apps; money, notices */
+  --peacock: #1f6f78; --peacock-2: #15545b; --peacock-soft: #d8ecea;  /* Software */
+  --rose: #d9668f;    --rose-2: #b23f69;    --rose-soft: #f8dde6;     /* Marketing */
+  --lilac: #c7b9f3;   --lilac-soft: #ece6fc;                         /* process bands */
+  --sky: #a9b8ff;
+
+  /* ---------- Signals ---------- */
+  --signal-red: #d24b36;   /* overdue, errors */
+  --signal-blue: #3346d3;  /* "Negotiation" status text */
+  --brass: #d9921a;        /* notification dot */
+  --brass-soft: #fcedc9;   /* "Proposal" status, counters */
+  --brass-text: #7a5d2c;   /* text on brass-soft */
+
+  /* ---------- CRM chart palette ---------- */
+  --chart-1: #1f4d3a;  --chart-2: #6f8f72;  --chart-3: #c9a76a;  --chart-4: #c3cfbd;
+  --chart-spark: #16181b;  /* sparklines, 1.4px stroke */
+
+  /* ---------- Type ---------- */
+  --font-display: "Mona Sans", ui-sans-serif, system-ui, sans-serif;  /* headings, numbers */
+  --font-sans: "Funnel Sans", ui-sans-serif, system-ui, sans-serif;   /* body, UI text */
+
+  /* ---------- Radius (CRM screens, px at 1240px frame) ---------- */
+  --radius-xs: 2px;  --radius-sm: 4px;  --radius-md: 6px;  --radius-lg: 8px;
+  --radius-xl: 12px; --radius-2xl: 16px; --radius-pill: 999px;
+  /* Website panels: 2rem–2.5rem; buttons and chips are pills. */
+
+  /* ---------- Elevation ---------- */
+  --shadow-panel: 0 1px 2px rgb(22 24 27 / 0.06), 0 10px 30px -14px rgb(22 24 27 / 0.22);
+  --shadow-scene: 0 2px 4px rgb(22 24 27 / 0.06), 0 24px 48px -20px rgb(22 24 27 / 0.3), 0 60px 90px -40px rgb(22 24 27 / 0.25);
+  --shadow-lift: 0 30px 60px -30px rgb(22 24 27 / 0.45);
+  --shadow-app-window: 0 40px 100px -30px rgb(0 0 0 / 0.7);  /* CRM window on forest-deep, plus 1px ring rgb(0 0 0 / 0.2) */
+
+  /* ---------- Motion ---------- */
+  --ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-pop: 180ms;  /* tab switch / menus: opacity fade, ease-out */
+}
+
+/* Type voices (Mona Sans uses its width axis) */
+.display  { font-family: var(--font-display); font-variation-settings: "wdth" 118; font-weight: 760; letter-spacing: -0.035em; line-height: 0.92; }
+.heading  { font-family: var(--font-display); font-variation-settings: "wdth" 112; font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+.title    { font-family: var(--font-display); font-variation-settings: "wdth" 106; font-weight: 650; letter-spacing: -0.015em; line-height: 1.1; }
+.mock-display { font-family: var(--font-display); font-variation-settings: "wdth" 112; font-weight: 700; letter-spacing: -0.03em; line-height: 0.98; } /* numbers and titles inside app screens */
+.tnum { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

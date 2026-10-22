@@ -1,0 +1,4 @@
+pnpm-lock.yaml
+docs/design
+dist
+apps/api/drizzle
